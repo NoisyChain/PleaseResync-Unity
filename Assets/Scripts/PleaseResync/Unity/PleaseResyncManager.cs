@@ -121,7 +121,8 @@ namespace PleaseResync.Unity
             session.Poll();
 
             //for (int i = 0; i < MAX_PLAYERS; i++)
-            LastInput[0] = sessionState.GetLocalInput(deviceID);
+            for (int i = 0; i < LastInput.Length; i++)
+                LastInput[i] = sessionState.GetLocalInput(i);
 
             //sessionEvents = session.Events();
 
