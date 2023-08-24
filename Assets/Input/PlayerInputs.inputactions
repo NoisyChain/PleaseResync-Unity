@@ -24,9 +24,27 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Jump",
+                    "name": "ButtonA",
                     "type": "Button",
                     "id": "a24f4daf-64ea-476b-a3ac-df08eaf1cec3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ButtonB",
+                    "type": "Button",
+                    "id": "f2773a74-8667-4004-99df-d1ada03f06d9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ButtonC",
+                    "type": "Button",
+                    "id": "0b6c5a5c-a55a-4c1d-b905-f11a4791553a",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -103,11 +121,33 @@
                 {
                     "name": "",
                     "id": "fbf8d7e4-de4c-4b12-92e1-8ed272bf8781",
-                    "path": "<Keyboard>/space",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Jump",
+                    "action": "ButtonA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c1fb2cf1-aebb-4f30-bb60-eba0bfc911b8",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ButtonB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6c1ebb8a-f3ef-433e-aae4-39744269f4ab",
+                    "path": "<Keyboard>/h",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ButtonC",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -136,9 +176,27 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Jump",
+                    "name": "ButtonA",
                     "type": "Button",
-                    "id": "5a1c2a19-ca9e-4448-ba00-f156752324e4",
+                    "id": "e775ead3-689c-4530-9ea5-d75f28d6a5a6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ButtonB",
+                    "type": "Button",
+                    "id": "a44811cc-0b23-4cd4-8238-ad8bfcd834aa",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ButtonC",
+                    "type": "Button",
+                    "id": "3127b1af-5da8-4686-9cd1-31bddb055a0f",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -214,12 +272,34 @@
                 },
                 {
                     "name": "",
-                    "id": "85997a66-b67d-4ce8-bf3d-01716873550a",
-                    "path": "<Keyboard>/numpad0",
+                    "id": "ff8971cd-af60-4254-ac4b-8a2882a3c0e5",
+                    "path": "<Keyboard>/numpad1",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Jump",
+                    "action": "ButtonA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a8e3c7a0-c17f-468a-aa20-2d2e4de023e0",
+                    "path": "<Keyboard>/numpad2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ButtonB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d141aa29-1b46-4dc0-8319-eb08f1cf84a6",
+                    "path": "<Keyboard>/numpad3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ButtonC",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

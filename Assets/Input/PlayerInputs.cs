@@ -46,9 +46,27 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Jump"",
+                    ""name"": ""ButtonA"",
                     ""type"": ""Button"",
                     ""id"": ""a24f4daf-64ea-476b-a3ac-df08eaf1cec3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ButtonB"",
+                    ""type"": ""Button"",
+                    ""id"": ""f2773a74-8667-4004-99df-d1ada03f06d9"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ButtonC"",
+                    ""type"": ""Button"",
+                    ""id"": ""0b6c5a5c-a55a-4c1d-b905-f11a4791553a"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -125,11 +143,33 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""fbf8d7e4-de4c-4b12-92e1-8ed272bf8781"",
-                    ""path"": ""<Keyboard>/space"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Jump"",
+                    ""action"": ""ButtonA"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c1fb2cf1-aebb-4f30-bb60-eba0bfc911b8"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ButtonB"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6c1ebb8a-f3ef-433e-aae4-39744269f4ab"",
+                    ""path"": ""<Keyboard>/h"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ButtonC"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -158,9 +198,27 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Jump"",
+                    ""name"": ""ButtonA"",
                     ""type"": ""Button"",
-                    ""id"": ""5a1c2a19-ca9e-4448-ba00-f156752324e4"",
+                    ""id"": ""e775ead3-689c-4530-9ea5-d75f28d6a5a6"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ButtonB"",
+                    ""type"": ""Button"",
+                    ""id"": ""a44811cc-0b23-4cd4-8238-ad8bfcd834aa"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ButtonC"",
+                    ""type"": ""Button"",
+                    ""id"": ""3127b1af-5da8-4686-9cd1-31bddb055a0f"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -236,12 +294,34 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""85997a66-b67d-4ce8-bf3d-01716873550a"",
-                    ""path"": ""<Keyboard>/numpad0"",
+                    ""id"": ""ff8971cd-af60-4254-ac4b-8a2882a3c0e5"",
+                    ""path"": ""<Keyboard>/numpad1"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Jump"",
+                    ""action"": ""ButtonA"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a8e3c7a0-c17f-468a-aa20-2d2e4de023e0"",
+                    ""path"": ""<Keyboard>/numpad2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ButtonB"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d141aa29-1b46-4dc0-8319-eb08f1cf84a6"",
+                    ""path"": ""<Keyboard>/numpad3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ButtonC"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -302,12 +382,16 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
         m_Player1 = asset.FindActionMap("Player1", throwIfNotFound: true);
         m_Player1_Vertical = m_Player1.FindAction("Vertical", throwIfNotFound: true);
         m_Player1_Horizontal = m_Player1.FindAction("Horizontal", throwIfNotFound: true);
-        m_Player1_Jump = m_Player1.FindAction("Jump", throwIfNotFound: true);
+        m_Player1_ButtonA = m_Player1.FindAction("ButtonA", throwIfNotFound: true);
+        m_Player1_ButtonB = m_Player1.FindAction("ButtonB", throwIfNotFound: true);
+        m_Player1_ButtonC = m_Player1.FindAction("ButtonC", throwIfNotFound: true);
         // Player2
         m_Player2 = asset.FindActionMap("Player2", throwIfNotFound: true);
         m_Player2_Vertical = m_Player2.FindAction("Vertical", throwIfNotFound: true);
         m_Player2_Horizontal = m_Player2.FindAction("Horizontal", throwIfNotFound: true);
-        m_Player2_Jump = m_Player2.FindAction("Jump", throwIfNotFound: true);
+        m_Player2_ButtonA = m_Player2.FindAction("ButtonA", throwIfNotFound: true);
+        m_Player2_ButtonB = m_Player2.FindAction("ButtonB", throwIfNotFound: true);
+        m_Player2_ButtonC = m_Player2.FindAction("ButtonC", throwIfNotFound: true);
         // Rollback
         m_Rollback = asset.FindActionMap("Rollback", throwIfNotFound: true);
         m_Rollback_Save_State = m_Rollback.FindAction("Save_State", throwIfNotFound: true);
@@ -375,14 +459,18 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private List<IPlayer1Actions> m_Player1ActionsCallbackInterfaces = new List<IPlayer1Actions>();
     private readonly InputAction m_Player1_Vertical;
     private readonly InputAction m_Player1_Horizontal;
-    private readonly InputAction m_Player1_Jump;
+    private readonly InputAction m_Player1_ButtonA;
+    private readonly InputAction m_Player1_ButtonB;
+    private readonly InputAction m_Player1_ButtonC;
     public struct Player1Actions
     {
         private @PlayerInputs m_Wrapper;
         public Player1Actions(@PlayerInputs wrapper) { m_Wrapper = wrapper; }
         public InputAction @Vertical => m_Wrapper.m_Player1_Vertical;
         public InputAction @Horizontal => m_Wrapper.m_Player1_Horizontal;
-        public InputAction @Jump => m_Wrapper.m_Player1_Jump;
+        public InputAction @ButtonA => m_Wrapper.m_Player1_ButtonA;
+        public InputAction @ButtonB => m_Wrapper.m_Player1_ButtonB;
+        public InputAction @ButtonC => m_Wrapper.m_Player1_ButtonC;
         public InputActionMap Get() { return m_Wrapper.m_Player1; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -398,9 +486,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Horizontal.started += instance.OnHorizontal;
             @Horizontal.performed += instance.OnHorizontal;
             @Horizontal.canceled += instance.OnHorizontal;
-            @Jump.started += instance.OnJump;
-            @Jump.performed += instance.OnJump;
-            @Jump.canceled += instance.OnJump;
+            @ButtonA.started += instance.OnButtonA;
+            @ButtonA.performed += instance.OnButtonA;
+            @ButtonA.canceled += instance.OnButtonA;
+            @ButtonB.started += instance.OnButtonB;
+            @ButtonB.performed += instance.OnButtonB;
+            @ButtonB.canceled += instance.OnButtonB;
+            @ButtonC.started += instance.OnButtonC;
+            @ButtonC.performed += instance.OnButtonC;
+            @ButtonC.canceled += instance.OnButtonC;
         }
 
         private void UnregisterCallbacks(IPlayer1Actions instance)
@@ -411,9 +505,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Horizontal.started -= instance.OnHorizontal;
             @Horizontal.performed -= instance.OnHorizontal;
             @Horizontal.canceled -= instance.OnHorizontal;
-            @Jump.started -= instance.OnJump;
-            @Jump.performed -= instance.OnJump;
-            @Jump.canceled -= instance.OnJump;
+            @ButtonA.started -= instance.OnButtonA;
+            @ButtonA.performed -= instance.OnButtonA;
+            @ButtonA.canceled -= instance.OnButtonA;
+            @ButtonB.started -= instance.OnButtonB;
+            @ButtonB.performed -= instance.OnButtonB;
+            @ButtonB.canceled -= instance.OnButtonB;
+            @ButtonC.started -= instance.OnButtonC;
+            @ButtonC.performed -= instance.OnButtonC;
+            @ButtonC.canceled -= instance.OnButtonC;
         }
 
         public void RemoveCallbacks(IPlayer1Actions instance)
@@ -437,14 +537,18 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     private List<IPlayer2Actions> m_Player2ActionsCallbackInterfaces = new List<IPlayer2Actions>();
     private readonly InputAction m_Player2_Vertical;
     private readonly InputAction m_Player2_Horizontal;
-    private readonly InputAction m_Player2_Jump;
+    private readonly InputAction m_Player2_ButtonA;
+    private readonly InputAction m_Player2_ButtonB;
+    private readonly InputAction m_Player2_ButtonC;
     public struct Player2Actions
     {
         private @PlayerInputs m_Wrapper;
         public Player2Actions(@PlayerInputs wrapper) { m_Wrapper = wrapper; }
         public InputAction @Vertical => m_Wrapper.m_Player2_Vertical;
         public InputAction @Horizontal => m_Wrapper.m_Player2_Horizontal;
-        public InputAction @Jump => m_Wrapper.m_Player2_Jump;
+        public InputAction @ButtonA => m_Wrapper.m_Player2_ButtonA;
+        public InputAction @ButtonB => m_Wrapper.m_Player2_ButtonB;
+        public InputAction @ButtonC => m_Wrapper.m_Player2_ButtonC;
         public InputActionMap Get() { return m_Wrapper.m_Player2; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -460,9 +564,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Horizontal.started += instance.OnHorizontal;
             @Horizontal.performed += instance.OnHorizontal;
             @Horizontal.canceled += instance.OnHorizontal;
-            @Jump.started += instance.OnJump;
-            @Jump.performed += instance.OnJump;
-            @Jump.canceled += instance.OnJump;
+            @ButtonA.started += instance.OnButtonA;
+            @ButtonA.performed += instance.OnButtonA;
+            @ButtonA.canceled += instance.OnButtonA;
+            @ButtonB.started += instance.OnButtonB;
+            @ButtonB.performed += instance.OnButtonB;
+            @ButtonB.canceled += instance.OnButtonB;
+            @ButtonC.started += instance.OnButtonC;
+            @ButtonC.performed += instance.OnButtonC;
+            @ButtonC.canceled += instance.OnButtonC;
         }
 
         private void UnregisterCallbacks(IPlayer2Actions instance)
@@ -473,9 +583,15 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
             @Horizontal.started -= instance.OnHorizontal;
             @Horizontal.performed -= instance.OnHorizontal;
             @Horizontal.canceled -= instance.OnHorizontal;
-            @Jump.started -= instance.OnJump;
-            @Jump.performed -= instance.OnJump;
-            @Jump.canceled -= instance.OnJump;
+            @ButtonA.started -= instance.OnButtonA;
+            @ButtonA.performed -= instance.OnButtonA;
+            @ButtonA.canceled -= instance.OnButtonA;
+            @ButtonB.started -= instance.OnButtonB;
+            @ButtonB.performed -= instance.OnButtonB;
+            @ButtonB.canceled -= instance.OnButtonB;
+            @ButtonC.started -= instance.OnButtonC;
+            @ButtonC.performed -= instance.OnButtonC;
+            @ButtonC.canceled -= instance.OnButtonC;
         }
 
         public void RemoveCallbacks(IPlayer2Actions instance)
@@ -551,13 +667,17 @@ public partial class @PlayerInputs: IInputActionCollection2, IDisposable
     {
         void OnVertical(InputAction.CallbackContext context);
         void OnHorizontal(InputAction.CallbackContext context);
-        void OnJump(InputAction.CallbackContext context);
+        void OnButtonA(InputAction.CallbackContext context);
+        void OnButtonB(InputAction.CallbackContext context);
+        void OnButtonC(InputAction.CallbackContext context);
     }
     public interface IPlayer2Actions
     {
         void OnVertical(InputAction.CallbackContext context);
         void OnHorizontal(InputAction.CallbackContext context);
-        void OnJump(InputAction.CallbackContext context);
+        void OnButtonA(InputAction.CallbackContext context);
+        void OnButtonB(InputAction.CallbackContext context);
+        void OnButtonC(InputAction.CallbackContext context);
     }
     public interface IRollbackActions
     {

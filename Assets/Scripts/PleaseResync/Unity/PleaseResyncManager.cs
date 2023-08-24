@@ -51,12 +51,6 @@ namespace PleaseResync.Unity
             controls.Disable();
         }
 
-        void Start()
-        {
-            if (OfflineMode) StartOfflineGame(new TesteGameState(0, 0, 2));
-            else StartOnlineGame(new TesteGameState(0, 0, MAX_PLAYERS));
-        }
-
         private void FixedUpdate()
         {
             if (OfflineMode) OfflineGameLoop();
@@ -105,6 +99,12 @@ namespace PleaseResync.Unity
                 if (i != deviceID) session.AddRemoteDevice((uint)i, 1, UdpSessionAdapter.CreateRemoteConfig(LocalAdress, Ports[i]));
             
             session.Poll();
+        }
+
+        public void StartGame(BaseGameState state)
+        {
+            if (OfflineMode) StartOfflineGame(state);
+            else StartOnlineGame(state);
         }
 
         protected void StartOfflineGame(BaseGameState state)
