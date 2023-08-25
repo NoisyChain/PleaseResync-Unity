@@ -150,7 +150,7 @@ Transform:
   m_Children:
   - {fileID: 3230297807703432237}
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8651728501820434544
 MonoBehaviour:
@@ -164,6 +164,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58c114022a375cb49b23d08cb6be9387, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayerColorObject:
+  - {fileID: 6047880727841599891}
+  - {fileID: 4221994160588125035}
+  playerColors:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
   mesh: {fileID: 3230297807703432237}
   positionViewer: {fileID: 0}
 --- !u!1 &8172852262135487567

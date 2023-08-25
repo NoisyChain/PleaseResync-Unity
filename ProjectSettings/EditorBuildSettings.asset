@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/PleaseResyncTest.unity
+    path: Assets/Scenes/InputsTest.unity
     guid: 93dea0497f5f0234c914a08cec547b5d
+  - enabled: 1
+    path: Assets/Scenes/VectorWar.unity
+    guid: 86c0149c154cbf64f88a270844e52892
   m_configObjects: {}

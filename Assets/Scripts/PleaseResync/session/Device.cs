@@ -146,6 +146,7 @@ namespace PleaseResync
                         if (LastAckedInputFrame + 1 == i)
                             LastAckedInputFrame = i;
                     }
+                    //LastAckedInputFrame = inputMessage.EndFrame;
                     break;
                 case DeviceInputAckMessage inputAckMessage:
                     UpdateAckedInputFrame(inputAckMessage); //Not being used right now
