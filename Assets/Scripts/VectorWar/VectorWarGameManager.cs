@@ -5,9 +5,13 @@ using PleaseResync.Unity;
 
 public class VectorWarGameManager : PleaseResyncManager
 {
-    // Start is called before the first frame update
-    void Start()
+    public override void OnlineGame(uint maxPlayers, uint ID)
     {
-        StartGame(new VectorWar(4));
+        StartOnlineGame(new VectorWar((int)maxPlayers), maxPlayers, ID);
+    }
+
+    public override void LocalGame(uint maxPlayers)
+    {
+        StartOfflineGame(new VectorWar((int)maxPlayers), maxPlayers);
     }
 }

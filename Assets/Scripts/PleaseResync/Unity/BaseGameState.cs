@@ -8,8 +8,6 @@ namespace PleaseResync.Unity
         public uint frame;
         public uint sum;
 
-        public string InputsDebug;
-
         public virtual void Update(byte[] playerInput)
         {
             frame++;
@@ -20,8 +18,6 @@ namespace PleaseResync.Unity
             {
                 sum += num;
             }
-
-            InputsDebug = $"({playerInput[0]} :: {playerInput[1]})";
         }
 
         public virtual void GameLoop(byte[] playerInput) {}

@@ -36,14 +36,16 @@ public class VectorWarGameViewer : MonoBehaviour
                 }
             }
         }
-
-        for (int i = 0; i < GameState._ships.Length; ++i)
+        else
         {
-            ships[i].UpdateVisuals(GameState._ships[i]);
-            for (int j = 0; j < GameState._ships[i].bullets.Length; ++j)
+            for (int i = 0; i < GameState._ships.Length; ++i)
             {
-                bullets[i][j].gameObject.SetActive(GameState._ships[i].bullets[j].active);
-                bullets[i][j].UpdateVisuals(GameState._ships[i].bullets[j]);
+                ships[i].UpdateVisuals(GameState._ships[i]);
+                for (int j = 0; j < GameState._ships[i].bullets.Length; ++j)
+                {
+                    bullets[i][j].gameObject.SetActive(GameState._ships[i].bullets[j].active);
+                    bullets[i][j].UpdateVisuals(GameState._ships[i].bullets[j]);
+                }
             }
         }
     }

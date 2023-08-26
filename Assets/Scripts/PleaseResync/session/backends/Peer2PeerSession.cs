@@ -63,7 +63,7 @@ namespace PleaseResync
             var messages = _sessionAdapter.ReceiveFrom();
             foreach (var (_, deviceId, message) in messages)
             {
-                System.Console.WriteLine($"Received message from remote device {deviceId}: {message}");
+                UnityEngine.Debug.Log($"Received message from remote device {deviceId}: {message}");
                 _allDevices[deviceId].HandleMessage(message);
             }
         }
@@ -86,7 +86,7 @@ namespace PleaseResync
         {
             //DeviceInputAckMessage still not working... Not needed right now
             //if (message.ID == 4) return 0;
-            System.Console.WriteLine($"Sending message to remote device {deviceId}: {message}");
+            UnityEngine.Debug.Log($"Sending message to remote device {deviceId}: {message}");
             return _sessionAdapter.SendTo(deviceId, message);
         }
 
@@ -100,7 +100,7 @@ namespace PleaseResync
             
             uint inputSize = (uint)(message.Input.Length / inputCount);
 
-            System.Console.WriteLine($"Recieved Inputs For Frames {message.StartFrame} to {message.EndFrame}. count: {inputCount}. size per input: {inputSize}");
+            UnityEngine.Debug.Log($"Recieved Inputs For Frames {message.StartFrame} to {message.EndFrame}. count: {inputCount}. size per input: {inputSize}");
 
             int inputIndex = 0;
             for (uint i = message.StartFrame; i <= message.EndFrame; i++)

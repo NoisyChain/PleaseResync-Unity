@@ -55,8 +55,8 @@ namespace PleaseResync
                 var packet = _udpClient.Receive(ref _remoteReceiveEndpoint);
                 MemoryStream readerStream = new MemoryStream(packet);
                 BinaryReader reader = new BinaryReader(readerStream);
-                var message = GetMessageType(reader);
-                messages.Add(((uint)packet.Length, FindDeviceIdFromEndpoint(_remoteReceiveEndpoint), message));
+                var tempMessage = GetMessageType(reader);
+                messages.Add(((uint)packet.Length, FindDeviceIdFromEndpoint(_remoteReceiveEndpoint), tempMessage));
             }
             return messages;
         }

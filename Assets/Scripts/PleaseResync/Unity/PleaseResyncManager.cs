@@ -10,15 +10,16 @@ namespace PleaseResync.Unity
     {
         [SerializeField] private TextMeshProUGUI SimulationInfo;
         [SerializeField] private TextMeshProUGUI PingInfo;
-        public bool OfflineMode;
+        private bool OfflineMode;
+        private bool Started;
         private PlayerInputs controls;
 
         private const uint INPUT_SIZE = 1;
         private const ushort FRAME_DELAY = 1;
-        private const int MAX_PLAYERS = 4;
-        private const int DEVICE_COUNT = 4;
-
-        public int deviceID;
+        private uint MAX_PLAYERS = 2;
+        private uint DEVICE_COUNT = 2;
+        public uint DEVICE_ID;
+        
         public string LocalAdress = "127.0.0.1";
         public ushort[] Ports = {7001, 7002, 7003, 7004};
 
@@ -42,7 +43,6 @@ namespace PleaseResync.Unity
         }
         public void OnEnable()
         {
-            //if (sessionState == null) StartOnlineGame(new TesteGameState(0, 0));
             controls.Enable();
         }
         public void OnDisable()
@@ -53,6 +53,8 @@ namespace PleaseResync.Unity
 
         private void FixedUpdate()
         {
+            if (!Started) return;
+
             if (OfflineMode) OfflineGameLoop();
             else
             {
@@ -81,39 +83,48 @@ namespace PleaseResync.Unity
             if (PingInfo != null) PingInfo.text = "Ping: " + GetPing.time.ToString() + " ms";
         }
 
-        protected void StartOnlineGame(BaseGameState state)
+        protected void StartOnlineGame(BaseGameState state, uint playerCount, uint ID)
         {
+            OfflineMode = false;
+
+            DEVICE_ID = ID;
+            MAX_PLAYERS = playerCount;
+            DEVICE_COUNT = playerCount;
+
             sessionState = state;
             
             sessionState.controls = controls;
 
-            adapter = new UdpSessionAdapter(Ports[deviceID]);
+            adapter = new UdpSessionAdapter(LocalAdress, Ports[DEVICE_ID]);
 
             session = new Peer2PeerSession(INPUT_SIZE, DEVICE_COUNT, MAX_PLAYERS, adapter);
 
             LastInput = new byte[INPUT_SIZE];
 
-            session.SetLocalDevice((uint)deviceID, 1, FRAME_DELAY);
+            session.SetLocalDevice(DEVICE_ID, 1, FRAME_DELAY);
             
-            for (int i = 0; i < MAX_PLAYERS; i++)
-                if (i != deviceID) session.AddRemoteDevice((uint)i, 1, UdpSessionAdapter.CreateRemoteConfig(LocalAdress, Ports[i]));
-            
+            for (uint i = 0; i < DEVICE_COUNT; i++)
+            {
+                if (i != DEVICE_ID) 
+                {
+                    session.AddRemoteDevice(i, 1, UdpSessionAdapter.CreateRemoteConfig(LocalAdress, Ports[i]));
+                    Debug.Log($"Device {i} created");
+                }
+            }
             session.Poll();
+            Started = true;
         }
 
-        public void StartGame(BaseGameState state)
+        protected void StartOfflineGame(BaseGameState state, uint playerCount)
         {
-            if (OfflineMode) StartOfflineGame(state);
-            else StartOnlineGame(state);
-        }
-
-        protected void StartOfflineGame(BaseGameState state)
-        {
+            OfflineMode = true;
             sessionState = state;
             sessionState.controls = controls;
 
-            LastInput = new byte[2];
+            LastInput = new byte[(int)playerCount];
             if (PingInfo != null) PingInfo.text = "";
+
+            Started = true;
         }
 
         private void OnlineGameLoop()
@@ -161,19 +172,21 @@ namespace PleaseResync.Unity
 
         private void OfflineGameLoop()
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < LastInput.Length; i++)
                 LastInput[i] = sessionState.GetLocalInput(i);
 
             sessionState.Update(LastInput);
+            InputDebug = InputConstructor(LastInput);
 
             if (SimulationInfo != null) 
-                SimulationInfo.text = $"{sessionState.frame} || ( {LastInput[0]} :: {LastInput[1]} )";
+                SimulationInfo.text = $"{sessionState.frame} || ( {InputDebug} )";
         }
 
-        private void CloseGame()
+        public void CloseGame()
         {
             sessionState = null;
             if (adapter != null) adapter.Close();
+            Started = false;
         }
 
         private string InputConstructor(byte[] PlayerInputs)
@@ -188,5 +201,9 @@ namespace PleaseResync.Unity
 
             return finalString;
         }
+
+        public virtual void OnlineGame(uint maxPlayers, uint ID) {}
+
+        public virtual void LocalGame(uint maxPlayers) {}
     }
 }
