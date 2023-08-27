@@ -10,6 +10,7 @@ namespace PleaseResync.Unity
 {
     public class ConnectionUI : MonoBehaviour
     {
+        private const uint MAX_CONNECTIONS = 4;
         private PleaseResyncManager manager;
         public ConnectionAddress[] connectionAdresses;
         public TMP_InputField PlayerCount;
@@ -30,9 +31,8 @@ namespace PleaseResync.Unity
 
         private void StartOnlineGame()
         {
-            int ParsedPlayerCount = int.Parse(PlayerCount.text);
-            int ParsedPlayerID = int.Parse(PlayerID.text);
-            manager.OnlineGame((uint)ParsedPlayerCount, (uint)ParsedPlayerID);
+            manager.CreateConnections(CreateAdressList(), CreatePortList());
+            manager.OnlineGame(uint.Parse(PlayerCount.text), uint.Parse(PlayerID.text));
             ConnectionMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Online game started.");
@@ -40,8 +40,7 @@ namespace PleaseResync.Unity
 
         private void StartLocalGame()
         {
-            int ParsedPlayerCount = int.Parse(PlayerCount.text);
-            manager.LocalGame((uint)ParsedPlayerCount);
+            manager.LocalGame(uint.Parse(PlayerCount.text));
             ConnectionMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Local game started.");
@@ -53,6 +52,30 @@ namespace PleaseResync.Unity
             ConnectionMenuObject.SetActive(true);
             ConnectedMenuObject.SetActive(false);
             Debug.Log("Game aborted.");
+        }
+
+        private string[] CreateAdressList()
+        {
+            string[] temp = new string[MAX_CONNECTIONS];
+            for (int i = 0; i < temp.Length; ++i)
+            {
+                string address = connectionAdresses[0].IPField.text.Trim();
+                temp[i] = address.Length > 0 ? address : "";
+            }
+
+            return temp;
+        }
+
+        private ushort[] CreatePortList()
+        {
+            ushort[] temp = new ushort[MAX_CONNECTIONS];
+            for (int i = 0; i < temp.Length; ++i)
+            {
+                string port = connectionAdresses[0].IPField.text.Trim();
+                temp[i] = port.Length > 0 ? ushort.Parse(port) : (ushort)0;
+            }
+
+            return temp;
         }
     }
 

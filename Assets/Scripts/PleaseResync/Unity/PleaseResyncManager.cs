@@ -18,10 +18,11 @@ namespace PleaseResync.Unity
         private const ushort FRAME_DELAY = 1;
         private uint MAX_PLAYERS = 2;
         private uint DEVICE_COUNT = 2;
-        public uint DEVICE_ID;
-        
-        public string LocalAdress = "127.0.0.1";
-        public ushort[] Ports = {7001, 7002, 7003, 7004};
+        private uint DEVICE_ID;
+
+        private string localhost = "127.0.0.1";
+        private string[] Adresses = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
+        private ushort[] Ports = {7001, 7002, 7003, 7004};
 
         [HideInInspector] public BaseGameState sessionState;
 
@@ -78,9 +79,18 @@ namespace PleaseResync.Unity
 
         IEnumerator Ping()
         {
-            Ping GetPing = new Ping("127.0.0.1");
+            Ping GetPing = new Ping(localhost);
             while (!GetPing.isDone) yield return null;
             if (PingInfo != null) PingInfo.text = "Ping: " + GetPing.time.ToString() + " ms";
+        }
+
+        public void CreateConnections(string[] IPAdresses, ushort[] ports)
+        {
+            for (uint i = 0; i < IPAdresses.Length; i++)
+            {
+                if (IPAdresses[i] != "") Adresses[i] = IPAdresses[i];
+                if (ports[i] > 0) Ports[i] = ports[i];
+            }
         }
 
         protected void StartOnlineGame(BaseGameState state, uint playerCount, uint ID)
@@ -95,7 +105,7 @@ namespace PleaseResync.Unity
             
             sessionState.controls = controls;
 
-            adapter = new UdpSessionAdapter(LocalAdress, Ports[DEVICE_ID]);
+            adapter = new UdpSessionAdapter(Adresses[DEVICE_ID], Ports[DEVICE_ID]);
 
             session = new Peer2PeerSession(INPUT_SIZE, DEVICE_COUNT, MAX_PLAYERS, adapter);
 
@@ -107,7 +117,7 @@ namespace PleaseResync.Unity
             {
                 if (i != DEVICE_ID) 
                 {
-                    session.AddRemoteDevice(i, 1, UdpSessionAdapter.CreateRemoteConfig(LocalAdress, Ports[i]));
+                    session.AddRemoteDevice(i, 1, UdpSessionAdapter.CreateRemoteConfig(Adresses[i], Ports[i]));
                     Debug.Log($"Device {i} created");
                 }
             }

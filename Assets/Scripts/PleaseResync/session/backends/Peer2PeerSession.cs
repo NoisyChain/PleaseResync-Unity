@@ -84,7 +84,6 @@ namespace PleaseResync
 
         internal protected override uint SendMessageTo(uint deviceId, DeviceMessage message)
         {
-            //DeviceInputAckMessage still not working... Not needed right now
             //if (message.ID == 4) return 0;
             UnityEngine.Debug.Log($"Sending message to remote device {deviceId}: {message}");
             return _sessionAdapter.SendTo(deviceId, message);

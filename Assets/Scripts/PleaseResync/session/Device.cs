@@ -140,7 +140,6 @@ namespace PleaseResync
                     break;
                 case DeviceInputMessage inputMessage:
                     _session.AddRemoteInput(Id, inputMessage);
-                    //Defining it with the final frame of the input message for now (it just works)
                     for (uint i = inputMessage.StartFrame; i <= inputMessage.EndFrame; i++)
                     {
                         if (LastAckedInputFrame + 1 == i)
@@ -149,7 +148,7 @@ namespace PleaseResync
                     //LastAckedInputFrame = inputMessage.EndFrame;
                     break;
                 case DeviceInputAckMessage inputAckMessage:
-                    UpdateAckedInputFrame(inputAckMessage); //Not being used right now
+                    UpdateAckedInputFrame(inputAckMessage);
                     break;
             }
         }
