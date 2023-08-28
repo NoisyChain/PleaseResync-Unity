@@ -65,8 +65,6 @@ namespace PleaseResync.Unity
                     if (SimulationInfo != null) SimulationInfo.text = "Syncing...";
                     return;
                 }
-
-                StartCoroutine(Ping());
                 
                 OnlineGameLoop();
             }
@@ -75,13 +73,6 @@ namespace PleaseResync.Unity
         void OnDestroy()
         {
             CloseGame();
-        }
-
-        IEnumerator Ping()
-        {
-            Ping GetPing = new Ping(localhost);
-            while (!GetPing.isDone) yield return null;
-            if (PingInfo != null) PingInfo.text = "Ping: " + GetPing.time.ToString() + " ms";
         }
 
         public void CreateConnections(string[] IPAdresses, ushort[] ports)
