@@ -12,11 +12,11 @@ public class InputsTestGameManager : PleaseResyncManager
     }
         public override void OnlineGame(uint maxPlayers, uint ID)
     {
-        StartOnlineGame(new TestGameState(0, 0, 4), maxPlayers, ID);
+        StartOnlineGame(new TestGameState(0, 0, maxPlayers), maxPlayers, ID);
     }
 
     public override void LocalGame(uint maxPlayers)
     {
-        StartOfflineGame(new TestGameState(0, 0, 4), maxPlayers);
+        StartOfflineGame(new TestGameState(0, 0, maxPlayers), maxPlayers);
     }
 }

@@ -12,24 +12,52 @@ public class InputsTestGameViewer : MonoBehaviour
     private InputsTestPlayerViewer[] Players;
     private TestGameState GameState;
 
-    void Update()
+    void ResetView()
     {
-        if (manager.sessionState == null) return;
+        if (Players != null)
+            foreach (InputsTestPlayerViewer p in Players)
+                Destroy(p.gameObject);
 
-        if (GameState == null)
-            GameState = (TestGameState)manager.sessionState;
-
-        if (Players == null)
+        Players = new InputsTestPlayerViewer[GameState.players.Length];
+        for (int i = 0; i < Players.Length; ++i)
         {
-            Players = new InputsTestPlayerViewer[GameState.players.Length];
-            for (int i = 0; i < GameState.players.Length; ++i)
-            {
-                Players[i] = Instantiate(PlayerPrefab, transform);
-                Players[i].ID = ID;
-            }
+            Players[i] = Instantiate(PlayerPrefab, transform);
+            Players[i].ID = ID;
+        }
+    }
+
+    void UpdateView()
+    {
+        for (int i = 0; i < GameState.players.Length; ++i)
+        {
+            if (!Players[i].gameObject.activeSelf)
+                Players[i].gameObject.SetActive(true);
+
+            Players[i].UpdateVisuals(GameState.players[i]);
         }
 
-        for (int i = 0; i < GameState.players.Length; ++i)
-            Players[i].UpdateVisuals(GameState.players[i]);
+        if (Players.Length > GameState.players.Length)
+        {
+            for (int i = GameState.players.Length; i < Players.Length; i++)
+            {
+                Players[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    void ManageView()
+    {
+        if (Players == null || Players.Length != GameState.players.Length)
+            ResetView();
+        else
+            UpdateView();
+    }
+
+    void Update()
+    {
+        GameState = (TestGameState)manager.sessionState;
+
+        if (GameState != null)
+            ManageView();
     }
 }

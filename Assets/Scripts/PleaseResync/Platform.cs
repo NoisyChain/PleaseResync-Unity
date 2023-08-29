@@ -9,6 +9,7 @@ namespace PleaseResync
     internal static class Platform
     {
         private readonly static Random RandomNumberGenerator = new Random();
+        public enum DebugType{ Log, Warning, Error};
 
         public static uint GetCurrentTimeMS()
         {
@@ -26,6 +27,21 @@ namespace PleaseResync
             var newArray = new byte[array.Length];
             Array.Copy(array, 0, newArray, 0, array.Length);
             return newArray;
+        }
+        public static void UnityLog(string message = "", DebugType type = DebugType.Log)
+        {
+            switch (type)
+            {
+                case DebugType.Log:
+                    UnityEngine.Debug.Log(message);
+                    break;
+                case DebugType.Warning:
+                    UnityEngine.Debug.LogWarning(message);
+                    break;
+                case DebugType.Error:
+                    UnityEngine.Debug.LogError(message);
+                    break;
+            }
         }
     }
 }

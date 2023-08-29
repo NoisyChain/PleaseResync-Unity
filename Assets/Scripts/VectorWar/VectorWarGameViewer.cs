@@ -16,6 +16,16 @@ public class VectorWarGameViewer : MonoBehaviour
 
     void ResetView()
     {
+        if (ships != null)
+        {
+            foreach (VectorWarShipViewer s in ships)
+                Destroy(s.gameObject);
+
+            foreach (VectorWarBulletViewer[] b1 in bullets)
+                foreach (VectorWarBulletViewer b2 in b1)
+                    Destroy(b2.gameObject);
+        }
+
         ships = new VectorWarShipViewer[GameState._ships.Length];
         bullets = new VectorWarBulletViewer[ships.Length][];
         for (int i = 0; i < ships.Length; ++i)
@@ -55,7 +65,7 @@ public class VectorWarGameViewer : MonoBehaviour
 
     void ManageView()
     {
-        if (ships == null)
+        if (ships == null || ships.Length != GameState._ships.Length)
             ResetView();
         else
             UpdateView();
