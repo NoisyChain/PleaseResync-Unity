@@ -140,7 +140,7 @@ namespace PleaseResync
                     break;
                 case DeviceInputMessage inputMessage:
                     _session.AddRemoteInput(Id, inputMessage);
-                    UpdateAckedInputFrame(inputMessage);
+                    //UpdateAckedInputFrame(inputMessage);
                     break;
                 case DeviceInputAckMessage inputAckMessage:
                     UpdateAckedInputFrame(inputAckMessage);
@@ -158,16 +158,11 @@ namespace PleaseResync
 
         private void UpdateAckedInputFrame(DeviceInputMessage inputMessage)
         {
-            /*if (LastAckedInputFrame + 1 == inputMessage.EndFrame)
-            {
-                LastAckedInputFrame = inputMessage.EndFrame;
-            }*/
             for (uint i = inputMessage.StartFrame; i <= inputMessage.EndFrame; i++)
             {
                 if (LastAckedInputFrame + 1 == i)
                     LastAckedInputFrame = i;
             }
-            //LastAckedInputFrame = inputMessage.EndFrame;
         }
 
         private void PumpSendQueue()

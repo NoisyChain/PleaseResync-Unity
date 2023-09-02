@@ -20,13 +20,13 @@ namespace PleaseResync.Unity
         private uint DEVICE_COUNT = 2;
         private uint DEVICE_ID;
 
-        private string localhost = "127.0.0.1";
+        //private string localhost = "127.0.0.1";
         private string[] Adresses = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
         private ushort[] Ports = {7001, 7002, 7003, 7004};
 
         [HideInInspector] public BaseGameState sessionState;
 
-        UdpSessionAdapter adapter;
+        LiteNetLibSessionAdapter adapter;
 
         Peer2PeerSession session;
 
@@ -96,7 +96,7 @@ namespace PleaseResync.Unity
             
             sessionState.controls = controls;
 
-            adapter = new UdpSessionAdapter(Adresses[DEVICE_ID], Ports[DEVICE_ID]);
+            adapter = new LiteNetLibSessionAdapter(Adresses[DEVICE_ID], Ports[DEVICE_ID]);
 
             session = new Peer2PeerSession(INPUT_SIZE, DEVICE_COUNT, MAX_PLAYERS, adapter);
 
@@ -108,7 +108,7 @@ namespace PleaseResync.Unity
             {
                 if (i != DEVICE_ID) 
                 {
-                    session.AddRemoteDevice(i, 1, UdpSessionAdapter.CreateRemoteConfig(Adresses[i], Ports[i]));
+                    session.AddRemoteDevice(i, 1, LiteNetLibSessionAdapter.CreateRemoteConfig(Adresses[i], Ports[i]));
                     Debug.Log($"Device {i} created");
                 }
             }
