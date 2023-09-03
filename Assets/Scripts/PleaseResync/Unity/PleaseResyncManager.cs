@@ -15,12 +15,11 @@ namespace PleaseResync.Unity
         private PlayerInputs controls;
 
         private const uint INPUT_SIZE = 1;
-        private const ushort FRAME_DELAY = 1;
+        private const ushort FRAME_DELAY = 2;
         private uint MAX_PLAYERS = 2;
         private uint DEVICE_COUNT = 2;
         private uint DEVICE_ID;
 
-        //private string localhost = "127.0.0.1";
         private string[] Adresses = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
         private ushort[] Ports = {7001, 7002, 7003, 7004};
 
@@ -33,8 +32,6 @@ namespace PleaseResync.Unity
         byte[] LastInput;
 
         List<SessionAction> sessionActions;
-
-        //Queue<SessionEvent> sessionEvents;
 
         string InputDebug;
 
@@ -106,7 +103,7 @@ namespace PleaseResync.Unity
             
             for (uint i = 0; i < DEVICE_COUNT; i++)
             {
-                if (i != DEVICE_ID) 
+                if (i != DEVICE_ID)
                 {
                     session.AddRemoteDevice(i, 1, LiteNetLibSessionAdapter.CreateRemoteConfig(Adresses[i], Ports[i]));
                     Debug.Log($"Device {i} created");
@@ -132,19 +129,11 @@ namespace PleaseResync.Unity
         {
             session.Poll();
 
-            //for (int i = 0; i < MAX_PLAYERS; i++)
             for (int i = 0; i < LastInput.Length; i++)
                 LastInput[i] = sessionState.GetLocalInput(i);
 
-            //sessionEvents = session.Events();
-
             sessionActions = session.AdvanceFrame(LastInput);
             
-            /*while (sessionEvents.Count > 0)
-            {
-                Debug.Log(sessionEvents.Dequeue().Desc());
-            }*/
-
             foreach (var action in sessionActions)
             {
                 switch (action)
