@@ -201,5 +201,6 @@ namespace PleaseResync
         }
 
         public int FrameAdvantage() => _timeSync.LocalFrameAdvantage;
+        public int RollbackFrames() => _timeSync.LocalFrame - (_timeSync.SyncFrame + 1);
     }
 }

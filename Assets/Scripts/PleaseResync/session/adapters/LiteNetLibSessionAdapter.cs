@@ -37,7 +37,6 @@ namespace PleaseResync
             BinaryWriter writer = new BinaryWriter(writerStream);
             message.Serialize(writer);
             var packet = writerStream.ToArray();
-
             foreach (var peer in _netManager.ConnectedPeerList)
             {
                 if (peer.EndPoint.Port == _remoteEndpoints[deviceId].Port)
@@ -146,6 +145,7 @@ namespace PleaseResync
 
         #endregion
 
+        //Get message type for the new serialization method
         public DeviceMessage GetMessageType(BinaryReader br)
         {
             DeviceMessage finalMessage = null;
@@ -167,6 +167,12 @@ namespace PleaseResync
             }
 
             return finalMessage;
+        }
+
+        //Get Ping (somehow)
+        public uint GetRTT()
+        {
+            return 0;
         }
     }
 }

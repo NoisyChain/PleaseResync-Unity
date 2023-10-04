@@ -113,5 +113,6 @@ namespace PleaseResync
         }
 
         public string FrameAdvantage() => _sync.FrameAdvantage().ToString();
+        public string RollbackFrames() => _sync.RollbackFrames().ToString();
     }
 }

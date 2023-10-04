@@ -108,6 +108,8 @@ namespace PleaseResync
             _udpClient.Dispose();
         }
 
+        #endregion
+
         //Get message type for the new serialization method
         public DeviceMessage GetMessageType(BinaryReader br)
         {
@@ -132,6 +134,9 @@ namespace PleaseResync
             return finalMessage;
         }
 
-        #endregion
+        public uint GetRTT()
+        {
+            return 0;
+        }
     }
 }

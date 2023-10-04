@@ -12,8 +12,6 @@ namespace PleaseResync
         public int RemoteFrameAdvantage;
         public int LocalFrameAdvantage;
 
-        private static int _count;
-
         public TimeSync()
         {
             SyncFrame = InitialFrame;

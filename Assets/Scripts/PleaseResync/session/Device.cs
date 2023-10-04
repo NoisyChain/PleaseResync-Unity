@@ -140,7 +140,7 @@ namespace PleaseResync
                     break;
                 case DeviceInputMessage inputMessage:
                     _session.AddRemoteInput(Id, inputMessage);
-                    //UpdateAckedInputFrame(inputMessage);
+                    UpdateAckedInputFrame(inputMessage);
                     break;
                 case DeviceInputAckMessage inputAckMessage:
                     UpdateAckedInputFrame(inputAckMessage);

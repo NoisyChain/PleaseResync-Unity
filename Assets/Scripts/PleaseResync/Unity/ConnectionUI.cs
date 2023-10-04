@@ -1,10 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using PleaseResync;
-using Unity.VisualScripting;
 
 namespace PleaseResync.Unity
 {
@@ -31,8 +27,10 @@ namespace PleaseResync.Unity
 
         private void StartOnlineGame()
         {
+            uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
+            uint finalPlayerID = PlayerID.text.Trim().Length > 0 ? uint.Parse(PlayerID.text) : 0;
             manager.CreateConnections(CreateAdressList(), CreatePortList());
-            manager.OnlineGame(uint.Parse(PlayerCount.text), uint.Parse(PlayerID.text));
+            manager.OnlineGame(finalPlayerCount, finalPlayerID);
             ConnectionMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Online game started.");
@@ -40,7 +38,8 @@ namespace PleaseResync.Unity
 
         private void StartLocalGame()
         {
-            manager.LocalGame(uint.Parse(PlayerCount.text));
+            uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
+            manager.LocalGame(finalPlayerCount);
             ConnectionMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Local game started.");

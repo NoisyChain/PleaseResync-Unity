@@ -9,7 +9,7 @@ namespace PleaseResync.Unity
     public class PleaseResyncManager : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI SimulationInfo;
-        [SerializeField] private TextMeshProUGUI PingInfo;
+        [SerializeField] private TextMeshProUGUI RollbackInfo;
         private bool OfflineMode;
         private bool Started;
         private PlayerInputs controls;
@@ -64,6 +64,7 @@ namespace PleaseResync.Unity
                 }
                 
                 OnlineGameLoop();
+                if (RollbackInfo != null) RollbackInfo.text = "RBF: " + session.RollbackFrames();
             }
         }
 
@@ -120,7 +121,7 @@ namespace PleaseResync.Unity
             sessionState.controls = controls;
 
             LastInput = new byte[(int)playerCount];
-            if (PingInfo != null) PingInfo.text = "";
+            if (RollbackInfo != null) RollbackInfo.text = "";
 
             Started = true;
         }
