@@ -120,13 +120,20 @@ public class Ship
 }
 
 [Serializable]
-public class VectorWar : BaseGameState 
+public class VectorWar : IGameState 
 {
+    public PlayerInputs controls;
+
+    public uint frame;
+    public uint sum;
+
+    public string InputsDebug;
+
     public Ship[] _ships;
 
     public static Rect _bounds = new Rect(0, 0, 640, 480);
 
-    public override void Serialize(BinaryWriter bw) 
+    public void Serialize(BinaryWriter bw) 
     {
         bw.Write(frame);
         bw.Write(sum);
@@ -136,7 +143,7 @@ public class VectorWar : BaseGameState
         }
     }
 
-    public override void Deserialize(BinaryReader br) 
+    public void Deserialize(BinaryReader br) 
     {
         frame = br.ReadUInt32();
         sum = br.ReadUInt32();
@@ -167,8 +174,10 @@ public class VectorWar : BaseGameState
         * Initialize our game state.
         */
 
-    public VectorWar(int num_players) 
+    public VectorWar(int num_players, PlayerInputs inputs) 
     {
+        controls = inputs;
+
         var w = _bounds.xMax - _bounds.xMin;
         var h = _bounds.yMax - _bounds.yMin;
         var r = h / 4;
@@ -330,8 +339,9 @@ public class VectorWar : BaseGameState
         File.WriteAllText(filename, fp);
     }
 
-    public override void GameLoop(byte[] playerInput)
+    public void GameLoop(byte[] playerInput)
     {
+        frame++;
         for (int i = 0; i < _ships.Length; i++) {
             float thrust, heading;
             int fire;
@@ -342,6 +352,10 @@ public class VectorWar : BaseGameState
                 _ships[i].cooldown--;
             }
         }
+        foreach (var num in playerInput)
+        {
+            sum += num;
+        }
     }
 
     public override bool Equals(object obj)
@@ -351,7 +365,7 @@ public class VectorWar : BaseGameState
                 sum == state.sum;
     }
 
-    public override byte GetLocalInput(int PlayerID)
+    public byte GetLocalInput(int PlayerID)
     {
         byte input = 0;
 

@@ -5,18 +5,29 @@ using PleaseResync.Unity;
 
 public class InputsTestGameManager : PleaseResyncManager
 {
-    // Start is called before the first frame update
-    void Start()
+    protected PlayerInputs controls;
+
+    void Awake()
     {
-        //StartGame(new TestGameState(0, 0, 4));
+        controls = new PlayerInputs();
     }
-        public override void OnlineGame(uint maxPlayers, uint ID)
+    public void OnEnable()
     {
-        StartOnlineGame(new TestGameState(0, 0, maxPlayers), maxPlayers, ID);
+        controls.Enable();
+    }
+    public new void OnDisable()
+    {
+        CloseGame();
+        controls.Disable();
+    }
+
+    public override void OnlineGame(uint maxPlayers, uint ID)
+    {
+        StartOnlineGame(new TestGameState(maxPlayers, controls), maxPlayers, ID);
     }
 
     public override void LocalGame(uint maxPlayers)
     {
-        StartOfflineGame(new TestGameState(0, 0, maxPlayers), maxPlayers);
+        StartOfflineGame(new TestGameState(maxPlayers, controls), maxPlayers);
     }
 }

@@ -200,6 +200,7 @@ namespace PleaseResync
             return input;
         }
 
+        public int Frame() => _timeSync.LocalFrame;
         public int FrameAdvantage() => _timeSync.LocalFrameAdvantage;
         public int RollbackFrames() => _timeSync.LocalFrame - (_timeSync.SyncFrame + 1);
     }

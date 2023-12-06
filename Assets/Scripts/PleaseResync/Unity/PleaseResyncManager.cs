@@ -12,7 +12,6 @@ namespace PleaseResync.Unity
         [SerializeField] private TextMeshProUGUI RollbackInfo;
         private bool OfflineMode;
         private bool Started;
-        private PlayerInputs controls;
 
         private const uint INPUT_SIZE = 1;
         private const ushort FRAME_DELAY = 2;
@@ -23,7 +22,7 @@ namespace PleaseResync.Unity
         private string[] Adresses = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
         private ushort[] Ports = {7001, 7002, 7003, 7004};
 
-        [HideInInspector] public BaseGameState sessionState;
+        [HideInInspector] public IGameState sessionState;
 
         LiteNetLibSessionAdapter adapter;
 
@@ -35,18 +34,9 @@ namespace PleaseResync.Unity
 
         string InputDebug;
 
-        void Awake()
-        {
-            controls = new PlayerInputs();
-        }
-        public void OnEnable()
-        {
-            controls.Enable();
-        }
         public void OnDisable()
         {
             CloseGame();
-            controls.Disable();
         }
 
         private void FixedUpdate()
@@ -82,7 +72,7 @@ namespace PleaseResync.Unity
             }
         }
 
-        protected void StartOnlineGame(BaseGameState state, uint playerCount, uint ID)
+        protected void StartOnlineGame(IGameState state, uint playerCount, uint ID)
         {
             OfflineMode = false;
 
@@ -92,8 +82,6 @@ namespace PleaseResync.Unity
 
             sessionState = state;
             
-            sessionState.controls = controls;
-
             adapter = new LiteNetLibSessionAdapter(Adresses[DEVICE_ID], Ports[DEVICE_ID]);
 
             session = new Peer2PeerSession(INPUT_SIZE, DEVICE_COUNT, MAX_PLAYERS, adapter);
@@ -114,11 +102,10 @@ namespace PleaseResync.Unity
             Started = true;
         }
 
-        protected void StartOfflineGame(BaseGameState state, uint playerCount)
+        protected void StartOfflineGame(IGameState state, uint playerCount)
         {
             OfflineMode = true;
             sessionState = state;
-            sessionState.controls = controls;
 
             LastInput = new byte[(int)playerCount];
             if (RollbackInfo != null) RollbackInfo.text = "";
@@ -141,12 +128,12 @@ namespace PleaseResync.Unity
                 {
                     case SessionAdvanceFrameAction AFAction:
                         InputDebug = InputConstructor(AFAction.Inputs);
-                        sessionState.Update(AFAction.Inputs);
+                        sessionState.GameLoop(AFAction.Inputs);
                         break;
                     case SessionLoadGameAction LGAction:
                         MemoryStream readerStream = new MemoryStream(LGAction.Load());
                         BinaryReader reader = new BinaryReader(readerStream);
-                        sessionState.Load(reader);
+                        sessionState.Deserialize(reader);
                         break;
                     case SessionSaveGameAction SGAction:
                         MemoryStream writerStream = new MemoryStream();
@@ -158,7 +145,7 @@ namespace PleaseResync.Unity
             }
 
             if (SimulationInfo != null) 
-                SimulationInfo.text = $"{sessionState.frame} ({session.FrameAdvantage()}) || ( {InputDebug} )";
+                SimulationInfo.text = $"{session.Frame()} ({session.FrameAdvantage()}) || ( {InputDebug} )";
         }
 
         private void OfflineGameLoop()
@@ -166,11 +153,11 @@ namespace PleaseResync.Unity
             for (int i = 0; i < LastInput.Length; i++)
                 LastInput[i] = sessionState.GetLocalInput(i);
 
-            sessionState.Update(LastInput);
+            sessionState.GameLoop(LastInput);
             InputDebug = InputConstructor(LastInput);
 
             if (SimulationInfo != null) 
-                SimulationInfo.text = $"{sessionState.frame} || ( {InputDebug} )";
+                SimulationInfo.text = $"{session.Frame()} || ( {InputDebug} )";
         }
 
         public void CloseGame()

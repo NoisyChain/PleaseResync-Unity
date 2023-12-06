@@ -10,8 +10,6 @@ public class GetPing : MonoBehaviour
 
     System.Net.NetworkInformation.Ping p = new System.Net.NetworkInformation.Ping();
     PingReply r;
-    int pingWindow;
-
     Thread PingThread;
 
     void Start()

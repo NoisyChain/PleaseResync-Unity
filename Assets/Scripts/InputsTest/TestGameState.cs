@@ -4,14 +4,14 @@ using PleaseResync.Unity;
 using FixMath.NET;
 using System.IO;
 
-public class TestGameState : BaseGameState
+public class TestGameState : IGameState
 {
-    //public PlayerInputs controls; <<< Inherited attribute
+    public PlayerInputs controls;
 
-    //public uint frame; <<< Inherited attribute
-    //public uint sum; <<< Inherited attribute
+    public uint frame;
+    public uint sum;
 
-    //public string InputsDebug; <<< Inherited attribute
+    public string InputsDebug;
 
     public TestPlayer[] players;
 
@@ -25,11 +25,12 @@ public class TestGameState : BaseGameState
         new FixVector2(Fix64.Zero, (Fix64)2)
     };
     
-    public TestGameState(uint frame, uint sum, uint playerCount)
+    public TestGameState(uint playerCount, PlayerInputs inputs)
     {
+        controls = inputs;
         players = new TestPlayer[playerCount];
-        this.frame = frame;
-        this.sum = sum;
+        this.frame = 0;
+        this.sum = 0;
         for (int i = 0; i < players.Length; ++i)
         {
             this.players[i] = new TestPlayer(positions[i]);
@@ -41,20 +42,18 @@ public class TestGameState : BaseGameState
         Deserialize(br);
     }
 
-    /*public override void Update(byte[] playerInput) <<< Inherited function
+    public void GameLoop(byte[] playerInput)
     {
-        base.Update(playerInput);
-
-        InputsDebug = $"({playerInput[0]} :: {playerInput[1]})";
-    }*/
-
-    public override void GameLoop(byte[] playerInput)
-    {
+        frame++;
         for (int i = 0; i < players.Length; ++i)
         {
             int h, v;
             ParseInputs(playerInput[i], out h, out v);
             players[i].Move(h, v);
+        }
+        foreach (var num in playerInput)
+        {
+            sum += num;
         }
     }
     public override bool Equals(object obj)
@@ -64,7 +63,7 @@ public class TestGameState : BaseGameState
                 sum == state.sum;
     }
 
-    public override void Serialize(BinaryWriter bw)
+    public void Serialize(BinaryWriter bw)
     {
         bw.Write(frame);
         bw.Write(sum);
@@ -72,7 +71,7 @@ public class TestGameState : BaseGameState
             players[i].Serialize(bw);
     }
 
-    public override void Deserialize(BinaryReader br)
+    public void Deserialize(BinaryReader br)
     {
         frame = br.ReadUInt32();
         sum = br.ReadUInt32();
@@ -96,7 +95,7 @@ public class TestGameState : BaseGameState
         Deserialize(br);
     }*/
 
-    public override byte GetLocalInput(int PlayerID)
+    public byte GetLocalInput(int PlayerID)
     {
         byte[] b = new byte[2];
         b[0] = (byte)ReadInputs(0);
