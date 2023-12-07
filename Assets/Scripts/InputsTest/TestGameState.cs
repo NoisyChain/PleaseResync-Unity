@@ -79,6 +79,11 @@ public class TestGameState : IGameState
             players[i].Deserialize(br);
     }
 
+    public string GetStateFrame()
+    {
+        return frame.ToString();
+    }
+
     public override int GetHashCode()
     {
         int hashCode = -1214587014;

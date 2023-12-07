@@ -145,7 +145,7 @@ namespace PleaseResync.Unity
             }
 
             if (SimulationInfo != null) 
-                SimulationInfo.text = $"{session.Frame()} ({session.FrameAdvantage()}) || ( {InputDebug} )";
+                SimulationInfo.text = $"{sessionState.GetStateFrame()} ({session.FrameAdvantage()}) || ( {InputDebug} )";
         }
 
         private void OfflineGameLoop()
@@ -157,7 +157,7 @@ namespace PleaseResync.Unity
             InputDebug = InputConstructor(LastInput);
 
             if (SimulationInfo != null) 
-                SimulationInfo.text = $"{session.Frame()} || ( {InputDebug} )";
+                SimulationInfo.text = $"{sessionState.GetStateFrame()} || ( {InputDebug} )";
         }
 
         public void CloseGame()

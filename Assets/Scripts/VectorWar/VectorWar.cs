@@ -156,6 +156,11 @@ public class VectorWar : IGameState
         }
     }
 
+    public string GetStateFrame()
+    {
+        return frame.ToString();
+    }
+
     private static float DegToRad(float deg) 
     {
         return PI * deg / 180;
