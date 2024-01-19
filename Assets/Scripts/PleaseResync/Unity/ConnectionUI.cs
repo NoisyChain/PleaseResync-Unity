@@ -70,7 +70,7 @@ namespace PleaseResync.Unity
             ushort[] temp = new ushort[MAX_CONNECTIONS];
             for (int i = 0; i < temp.Length; ++i)
             {
-                string port = connectionAdresses[0].IPField.text.Trim();
+                string port = connectionAdresses[0].PortField.text.Trim();
                 temp[i] = port.Length > 0 ? ushort.Parse(port) : (ushort)0;
             }
 
