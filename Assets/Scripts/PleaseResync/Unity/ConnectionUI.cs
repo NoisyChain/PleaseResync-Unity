@@ -8,7 +8,7 @@ namespace PleaseResync.Unity
     {
         private const uint MAX_CONNECTIONS = 4;
         private PleaseResyncManager manager;
-        public ConnectionAddress[] connectionAdresses;
+        public ConnectionAddress[] connectionAddresses;
         public TMP_InputField PlayerCount;
         public TMP_InputField PlayerID;
         public Button ConnectGameButton;
@@ -29,7 +29,7 @@ namespace PleaseResync.Unity
         {
             uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
             uint finalPlayerID = PlayerID.text.Trim().Length > 0 ? uint.Parse(PlayerID.text) : 0;
-            manager.CreateConnections(CreateAdressList(), CreatePortList());
+            manager.CreateConnections(CreateAddressList(), CreatePortList());
             manager.OnlineGame(finalPlayerCount, finalPlayerID);
             ConnectionMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
@@ -53,12 +53,12 @@ namespace PleaseResync.Unity
             Debug.Log("Game aborted.");
         }
 
-        private string[] CreateAdressList()
+        private string[] CreateAddressList()
         {
             string[] temp = new string[MAX_CONNECTIONS];
             for (int i = 0; i < temp.Length; ++i)
             {
-                string address = connectionAdresses[0].IPField.text.Trim();
+                string address = connectionAddresses[i].IPField.text.Trim();
                 temp[i] = address.Length > 0 ? address : "";
             }
 
@@ -70,7 +70,7 @@ namespace PleaseResync.Unity
             ushort[] temp = new ushort[MAX_CONNECTIONS];
             for (int i = 0; i < temp.Length; ++i)
             {
-                string port = connectionAdresses[0].PortField.text.Trim();
+                string port = connectionAddresses[0].PortField.text.Trim();
                 temp[i] = port.Length > 0 ? ushort.Parse(port) : (ushort)0;
             }
 
