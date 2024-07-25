@@ -13,6 +13,7 @@ namespace PleaseResync.Unity
         public TMP_InputField PlayerID;
         public Button ConnectGameButton;
         public Button LocalGameButton;
+        public Button ReplayButton;
         public Button CloseGameButton;
         public GameObject ConnectionMenuObject;
         public GameObject ConnectedMenuObject;
@@ -22,6 +23,7 @@ namespace PleaseResync.Unity
             manager = FindObjectOfType<PleaseResyncManager>();
             ConnectGameButton.onClick.AddListener(() => StartOnlineGame());
             LocalGameButton.onClick.AddListener(() => StartLocalGame());
+            ReplayButton.onClick.AddListener(() => StartReplay());
             CloseGameButton.onClick.AddListener(() => CloseGame());
         }
 
@@ -43,6 +45,15 @@ namespace PleaseResync.Unity
             ConnectionMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Local game started.");
+        }
+
+        private void StartReplay()
+        {
+            uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
+            manager.ReplayMode(finalPlayerCount);
+            ConnectionMenuObject.SetActive(false);
+            ConnectedMenuObject.SetActive(true);
+            Debug.Log("Executing replay...");
         }
 
         private void CloseGame()

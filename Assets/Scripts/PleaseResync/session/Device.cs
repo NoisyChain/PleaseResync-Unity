@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System;
+//using UnityEngine;
 
 namespace PleaseResync
 {
@@ -19,7 +20,7 @@ namespace PleaseResync
         {
             Syncing,
             Running,
-            Disconnected,
+            Disconnected
         }
 
         #endregion
@@ -43,6 +44,9 @@ namespace PleaseResync
         private const uint NUM_SYNC_ROUNDTRIPS = 5;
         private const uint SYNC_NEXT_RETRY_INTERVAL = 2000;
         private const uint SYNC_FIRST_RETRY_INTERVAL = 500;
+        private const ushort CONNECTION_TEST_LIMIT = 300;
+
+        private ushort connectionTest;
 
         private readonly Session _session;
 
@@ -50,6 +54,7 @@ namespace PleaseResync
         private uint _syncRoundtripsRemaining;
         private ushort _syncRoundtripsRandomRequest;
         private Queue<DeviceMessageQueueEntry> _sendQueue;
+        public List<(int, uint)> Health = new List<(int, uint)>();
 
         #endregion
 
@@ -78,7 +83,7 @@ namespace PleaseResync
         {
             uint now = Platform.GetCurrentTimeMS();
 
-            if (Type == Device.DeviceType.Remote)
+            if (Type == DeviceType.Remote)
             {
                 uint interval = _syncRoundtripsRemaining == NUM_SYNC_ROUNDTRIPS ? SYNC_FIRST_RETRY_INTERVAL : SYNC_NEXT_RETRY_INTERVAL;
                 if (_lastSendTime + interval < now)
@@ -99,10 +104,14 @@ namespace PleaseResync
         public void FinishedSyncing()
         {
             State = DeviceState.Running;
-            var ev = new DeviceSyncedEvent { DeviceId = Id };
+            //var ev = new DeviceSyncedEvent { DeviceId = Id };
             //_session.AddSessionEvent(ev);
         }
 
+        public void EndConnection()
+        {
+            State = DeviceState.Disconnected;
+        }
         #endregion
 
         #region Sending and Receiving messages
@@ -116,6 +125,7 @@ namespace PleaseResync
 
         public void HandleMessage(DeviceMessage message)
         {
+            connectionTest = 0;
             switch (message)
             {
                 case DeviceSyncMessage syncMessage:
@@ -140,12 +150,23 @@ namespace PleaseResync
                     break;
                 case DeviceInputMessage inputMessage:
                     _session.AddRemoteInput(Id, inputMessage);
-                    UpdateAckedInputFrame(inputMessage);
                     break;
                 case DeviceInputAckMessage inputAckMessage:
                     UpdateAckedInputFrame(inputAckMessage);
                     break;
+                case HealthCheckMessage healthCheckMessage:
+                    Health.Add((healthCheckMessage.Frame, healthCheckMessage.Checksum));
+                    break;
             }
+        }
+
+        public void TestConnection()
+        {
+            if (State == DeviceState.Disconnected) return;
+
+            connectionTest++;
+            if (connectionTest >= CONNECTION_TEST_LIMIT)
+                EndConnection();
         }
 
         private void UpdateAckedInputFrame(DeviceInputAckMessage inputAckMessage)
@@ -156,15 +177,6 @@ namespace PleaseResync
             }
         }
 
-        private void UpdateAckedInputFrame(DeviceInputMessage inputMessage)
-        {
-            for (uint i = inputMessage.StartFrame; i <= inputMessage.EndFrame; i++)
-            {
-                if (LastAckedInputFrame + 1 == i)
-                    LastAckedInputFrame = i;
-            }
-        }
-
         private void PumpSendQueue()
         {
             while (_sendQueue.Count > 0)
@@ -172,7 +184,6 @@ namespace PleaseResync
                 _session.SendMessageTo(Id, _sendQueue.Dequeue().Message);
             }
         }
-
         #endregion
     }
 

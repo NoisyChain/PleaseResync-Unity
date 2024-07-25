@@ -1,11 +1,13 @@
+using UnityEngine;
+
 namespace PleaseResync
 {
     internal class TimeSync
     {
         public const int InitialFrame = 0;
         public const int MaxRollbackFrames = 8;
-        public const int MinFrameAdvantage = 2;
-        public const int FrameAdvantageLimit = 4;
+        public const int FrameAdvantageLimit = 1;
+
         public int SyncFrame;
         public int LocalFrame;
         public int RemoteFrame;
@@ -45,9 +47,10 @@ namespace PleaseResync
             // Set variables
             RemoteFrame = minRemoteFrame;
             RemoteFrameAdvantage = maxRemoteFrameAdvantage;
-            // How far the client is ahead of the last reported frame by the remote clients           
+            //AddRemoteAdvantage(maxRemoteFrameAdvantage);
+            // How far the client is ahead of the last reported frame by the remote clients
             LocalFrameAdvantage = LocalFrame - RemoteFrame;
-            int frameAdvDiff = LocalFrameAdvantage - RemoteFrameAdvantage;
+            int frameAdvDiff = Mathf.Max(0, LocalFrameAdvantage) - Mathf.Max(0, RemoteFrameAdvantage);
             // Only allow the local client to get so far ahead of remote.
             return LocalFrameAdvantage < MaxRollbackFrames && frameAdvDiff <= FrameAdvantageLimit;
         }

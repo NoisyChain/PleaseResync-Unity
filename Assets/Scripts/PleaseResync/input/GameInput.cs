@@ -12,12 +12,12 @@ namespace PleaseResync
         public readonly uint PlayerCount;
 
         public int Frame;
-        public byte[] Inputs;
+        public PlayerInput[] Inputs;
 
         public GameInput(int frame, uint inputSize, uint playerCount)
         {
             Frame = frame;
-            Inputs = new byte[inputSize * playerCount];
+            Inputs = new PlayerInput[inputSize * playerCount];
             InputSize = inputSize;
             PlayerCount = playerCount;
         }
@@ -27,7 +27,7 @@ namespace PleaseResync
             Array.Copy(gameInput.Inputs, Inputs, gameInput.Inputs.Length);
         }
 
-        public void SetInputs(uint offset, uint playerCount, byte[] deviceInputs)
+        public void SetInputs(uint offset, uint playerCount, PlayerInput[] deviceInputs)
         {
             Debug.Assert(deviceInputs != null);
             Debug.Assert(offset + (playerCount * InputSize) <= Inputs.Length);

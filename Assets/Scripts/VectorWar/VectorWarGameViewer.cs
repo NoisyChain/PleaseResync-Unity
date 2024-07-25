@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PleaseResync.Unity;
+using PleaseResync;
 
 public class VectorWarGameViewer : MonoBehaviour
 {

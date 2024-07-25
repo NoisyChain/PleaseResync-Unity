@@ -39,7 +39,7 @@ namespace PleaseResync
             var packet = writerStream.ToArray();
             foreach (var peer in _netManager.ConnectedPeerList)
             {
-                if (peer.EndPoint.Port == _remoteEndpoints[deviceId].Port)
+                if (peer.Port == _remoteEndpoints[deviceId].Port)
                 {
                     peer.Send(packet, DeliveryMethod.Unreliable);
                     return (uint)packet.Length;
@@ -69,6 +69,8 @@ namespace PleaseResync
                 throw new Exception($"Remote configuration must be of type {typeof(IPEndPoint)}");
             }
         }
+
+        public void AddSpectator(uint deviceId, object remoteConfiguration) {}
 
         private uint FindDeviceIdFromEndpoint(IPEndPoint endpoint)
         {
@@ -108,7 +110,7 @@ namespace PleaseResync
             MemoryStream readerStream = new MemoryStream(packet);
             BinaryReader reader = new BinaryReader(readerStream);
             var message = GetMessageType(reader);
-            _messages.Add(((uint)packet.Length, FindDeviceIdFromEndpoint(peer.EndPoint), message));
+            _messages.Add(((uint)packet.Length, FindDeviceIdFromEndpoint(peer), message));
         }
 
         public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
@@ -164,15 +166,12 @@ namespace PleaseResync
                 case 4:
                     finalMessage = new DeviceInputAckMessage(br);
                     break;
+                case 5:
+                    finalMessage = new HealthCheckMessage(br);
+                    break;
             }
 
             return finalMessage;
-        }
-
-        //Get Ping (somehow)
-        public uint GetRTT()
-        {
-            return 0;
         }
     }
 }

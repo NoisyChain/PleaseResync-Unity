@@ -73,6 +73,8 @@ namespace PleaseResync
             }
         }
 
+        public void AddSpectator(uint deviceId, object remoteConfiguration) {}
+
         private uint FindDeviceIdFromEndpoint(IPEndPoint endpoint)
         {
             for (uint deviceId = 0; deviceId < _remoteEndpoints.Length; deviceId++)
@@ -129,14 +131,12 @@ namespace PleaseResync
                 case 4:
                     finalMessage = new DeviceInputAckMessage(br);
                     break;
+                case 5:
+                    finalMessage = new HealthCheckMessage(br);
+                    break;
             }
 
             return finalMessage;
-        }
-
-        public uint GetRTT()
-        {
-            return 0;
         }
     }
 }

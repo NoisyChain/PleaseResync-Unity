@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System;
+//using UnityEngine;
 
 namespace PleaseResync
 {
     internal class Sync
     {
+        public enum SyncState { SYNCING, RUNNING, DEVICE_LOST, DESYNCED }
+
         private readonly uint _inputSize;
         private readonly Device[] _devices;
 
@@ -13,16 +16,25 @@ namespace PleaseResync
         private InputQueue[] _deviceInputs;
         private StateStorage _stateStorage;
 
-        public Sync(Device[] devices, uint inputSize)
+        private const int HealthCheckFramesBehind = 10;
+        private const byte HealthCheckTime = 30;
+        private byte HealthCheckBus;
+        private bool _offlinePlay;
+
+        private SyncState _syncState;
+
+        public Sync(Device[] devices, uint inputSize, bool offline)
         {
             _devices = devices;
             _inputSize = inputSize;
+            _offlinePlay = offline;
             _timeSync = new TimeSync();
             _stateStorage = new StateStorage(TimeSync.MaxRollbackFrames);
             _deviceInputs = new InputQueue[_devices.Length];
+            _syncState = SyncState.SYNCING;
         }
 
-        public void AddRemoteInput(uint deviceId, int frame, byte[] deviceInput)
+        public void AddRemoteInput(uint deviceId, int frame, PlayerInput[] deviceInput)
         {
             // only allow adding input to the local device
             Debug.Assert(_devices[deviceId].Type == Device.DeviceType.Remote);
@@ -37,11 +49,6 @@ namespace PleaseResync
             AddDeviceInput(frame, deviceId, deviceInput);
         }
 
-        public uint FramesAhead()
-        {
-            return (uint)_timeSync.LocalFrameAdvantage;
-        }
-
         public void SetLocalDevice(uint deviceId, uint playerCount, uint frameDelay)
         {
             _deviceInputs[deviceId] = new InputQueue(_inputSize, playerCount, frameDelay);
@@ -52,47 +59,86 @@ namespace PleaseResync
             _deviceInputs[deviceId] = new InputQueue(_inputSize, playerCount);
         }
 
-        public List<SessionAction> AdvanceSync(uint localDeviceId, byte[] deviceInput)
+        public void AddSpectatorDevice(uint deviceId)
+        {
+            _deviceInputs[deviceId] = new InputQueue(_inputSize, 1);
+        }
+
+        public List<SessionAction> AdvanceSync(uint localDeviceId, PlayerInput[] deviceInput)
         {
             // should be called after polling the remote devices for their messages.
             Debug.Assert(deviceInput != null);
 
-            bool isTimeSynced = _timeSync.IsTimeSynced(_devices);
+            bool isTimeSynced = _offlinePlay ? true : _timeSync.IsTimeSynced(_devices);
+            _syncState = isTimeSynced ? SyncState.RUNNING : SyncState.SYNCING;
 
             UpdateSyncFrame();
 
             var actions = new List<SessionAction>();
 
-            // create savestate at the initialFrame to support rolling back to it
-            // for example if initframe = 0 then 0 will be first save option to rollback to.
-            if (_timeSync.LocalFrame == TimeSync.InitialFrame)
-            {
-                actions.Add(new SessionSaveGameAction(_timeSync.LocalFrame, _stateStorage));
-            }
-
-            // rollback update
-            if (_timeSync.ShouldRollback())
-            {
-                actions.Add(new SessionLoadGameAction(_timeSync.SyncFrame, _stateStorage));
-                for (int i = _timeSync.SyncFrame + 1; i <= _timeSync.LocalFrame; i++)
+            if (!_offlinePlay)
+            {                
+                // create savestate at the initialFrame to support rolling back to it
+                // for example if initframe = 0 then 0 will be first save option to rollback to.
+                if (_timeSync.LocalFrame == TimeSync.InitialFrame)
                 {
-                    actions.Add(new SessionAdvanceFrameAction(i, GetFrameInput(i).Inputs));
-                    actions.Add(new SessionSaveGameAction(i, _stateStorage));
+                    actions.Add(new SessionSaveGameAction(_timeSync.LocalFrame, _stateStorage));
+                }
+
+                // rollback update
+                if (_timeSync.ShouldRollback())
+                {
+                    actions.Add(new SessionLoadGameAction(_timeSync.SyncFrame, _stateStorage));
+                    for (int i = _timeSync.SyncFrame + 1; i <= _timeSync.LocalFrame; i++)
+                    {
+                        actions.Add(new SessionAdvanceFrameAction(i, GetFrameInput(i).Inputs));
+                        actions.Add(new SessionSaveGameAction(i, _stateStorage));
+                    }
+
+                    UnityEngine.Debug.Log($"Rollback detected from frame {_timeSync.SyncFrame + 1} to frame {_timeSync.LocalFrame} ({RollbackFrames() + 1} frames)");
+                }
+
+                if (isTimeSynced)
+                {
+                    HealthCheck(); //<<< Working now I guess
+
+                    _timeSync.LocalFrame++;
+
+                    AddLocalInput(localDeviceId, deviceInput);
+                    SendLocalInputs(localDeviceId);
+
+                    actions.Add(new SessionAdvanceFrameAction(_timeSync.LocalFrame, GetFrameInput(_timeSync.LocalFrame).Inputs));
+                    actions.Add(new SessionSaveGameAction(_timeSync.LocalFrame, _stateStorage));
                 }
             }
-
-            if (isTimeSynced)
+            else
             {
                 _timeSync.LocalFrame++;
 
                 AddLocalInput(localDeviceId, deviceInput);
-                SendLocalInputs(localDeviceId);
 
                 actions.Add(new SessionAdvanceFrameAction(_timeSync.LocalFrame, GetFrameInput(_timeSync.LocalFrame).Inputs));
-                actions.Add(new SessionSaveGameAction(_timeSync.LocalFrame, _stateStorage));   
             }
-
             return actions;
+        }
+
+        private void HealthCheck()
+        {
+            SendHealthCheck();
+            CheckHealth();
+        }
+
+        public void LookForDisconnectedDevices()
+        {
+            if (_syncState == SyncState.DESYNCED) return;
+            
+            foreach (var device in _devices)
+            {
+                if (device.State == Device.DeviceState.Disconnected)
+                {
+                    _syncState = SyncState.DEVICE_LOST;
+                }
+            }
         }
 
         private void SendLocalInputs(uint localDeviceId)
@@ -102,11 +148,12 @@ namespace PleaseResync
                 if (device.Type == Device.DeviceType.Remote)
                 {
                     //Using a somewhat fixed value for the starting frame to compensate packet loss
-                    //8 is kind of a magic number... TODO: replace it for something more optimized
-                    uint startingFrame = _timeSync.LocalFrame <= 8 ? 0 : (uint)_timeSync.LocalFrame - 8;
+                    //TODO: replace it for something more optimized
+                    uint limitFrames = TimeSync.MaxRollbackFrames - 1;
+                    uint startingFrame = _timeSync.LocalFrame <= limitFrames ? 0 : (uint)_timeSync.LocalFrame - limitFrames;
                     uint finalFrame = (uint)(_timeSync.LocalFrame + _deviceInputs[localDeviceId].GetFrameDelay());
 
-                    var combinedInput = new List<byte>();
+                    var combinedInput = new List<PlayerInput>();
 
                     for (uint i = startingFrame; i <= finalFrame; i++)
                     {
@@ -123,8 +170,56 @@ namespace PleaseResync
             }
         }
 
+        private void SendHealthCheck()
+        {
+            int frame = _timeSync.LocalFrame - HealthCheckFramesBehind;
+            if (frame <= 0) return;
+
+            uint checksum = _stateStorage.GetChecksum(frame);
+
+            HealthCheckBus++;
+            if (HealthCheckBus == HealthCheckTime)
+            {
+                foreach (var device in _devices)
+                {
+                    if (device.Type == Device.DeviceType.Remote)
+                    {
+                        device.SendMessage(new HealthCheckMessage
+                        {
+                            Frame = frame,
+                            Checksum = checksum
+                        });
+                        UnityEngine.Debug.Log($"Sending HealthCheck message: {frame}, {checksum}");
+                    }
+                }
+                HealthCheckBus = 0;
+            }
+        }
+
+        private void CheckHealth()
+        {
+            foreach (var device in _devices)
+            {
+                if (device.Type == Device.DeviceType.Remote)
+                {
+                    foreach ((int, uint) health in device.Health)
+                    {
+                        if (!_stateStorage.CompareChecksums(health.Item1, health.Item2))
+                        {
+                            device.State = Device.DeviceState.Disconnected;
+                            _syncState = SyncState.DESYNCED;
+                            UnityEngine.Debug.Log($"State mismatch found.({health.Item2} : {_stateStorage.GetChecksum(health.Item1)})");
+                            break;
+                        }
+                    }
+                    device.Health.Clear();
+                }
+            }
+        }
+
         private void UpdateSyncFrame()
         {
+            if (_offlinePlay) return;
             int finalFrame = _timeSync.RemoteFrame;
             if (_timeSync.RemoteFrame > _timeSync.LocalFrame)
             {
@@ -155,14 +250,14 @@ namespace PleaseResync
             _timeSync.SyncFrame = foundFrame;
         }
 
-        private void AddLocalInput(uint deviceId, byte[] deviceInput)
+        private void AddLocalInput(uint deviceId, PlayerInput[] deviceInput)
         {
             // only allow adding input to the local device
             Debug.Assert(_devices[deviceId].Type == Device.DeviceType.Local);
             AddDeviceInput(_timeSync.LocalFrame, deviceId, deviceInput);
         }
         
-        private void AddDeviceInput(int frame, uint deviceId, byte[] deviceInput)
+        private void AddDeviceInput(int frame, uint deviceId, PlayerInput[] deviceInput)
         {
             Debug.Assert(deviceInput.Length == _devices[deviceId].PlayerCount * _inputSize,
              "the length of the given deviceInput isnt correct!");
@@ -201,7 +296,8 @@ namespace PleaseResync
         }
 
         public int Frame() => _timeSync.LocalFrame;
-        public int FrameAdvantage() => _timeSync.LocalFrameAdvantage;
-        public int RollbackFrames() => _timeSync.LocalFrame - (_timeSync.SyncFrame + 1);
+        public int FramesAhead() => _timeSync.LocalFrameAdvantage;
+        public uint RollbackFrames() => (uint) UnityEngine.Mathf.Max(0, _timeSync.LocalFrame - (_timeSync.SyncFrame + 1));
+        public SyncState State() => _syncState;
     }
 }

@@ -1,26 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PleaseResync.Unity;
+using PleaseResync;
 
 public class VectorWarGameManager : PleaseResyncManager
 {
-    protected PlayerInputs controls;
-
-    void Awake()
-    {
-        controls = new PlayerInputs();
-    }
-    public void OnEnable()
-    {
-        controls.Enable();
-    }
-    public new void OnDisable()
-    {
-        CloseGame();
-        controls.Disable();
-    }
-
     public override void OnlineGame(uint maxPlayers, uint ID)
     {
         StartOnlineGame(new VectorWar((int)maxPlayers, controls), maxPlayers, ID);
@@ -29,5 +13,10 @@ public class VectorWarGameManager : PleaseResyncManager
     public override void LocalGame(uint maxPlayers)
     {
         StartOfflineGame(new VectorWar((int)maxPlayers, controls), maxPlayers);
+    }
+
+    public override void ReplayMode(uint maxPlayers)
+    {
+        StartReplay(new VectorWar((int)maxPlayers, controls), maxPlayers);
     }
 }

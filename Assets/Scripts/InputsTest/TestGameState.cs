@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using PleaseResync.Unity;
+using PleaseResync;
 using FixMath.NET;
 using System.IO;
 
@@ -8,8 +8,7 @@ public class TestGameState : IGameState
 {
     public PlayerInputs controls;
 
-    public uint frame;
-    public uint sum;
+    public int frame;
 
     public string InputsDebug;
 
@@ -29,8 +28,7 @@ public class TestGameState : IGameState
     {
         controls = inputs;
         players = new TestPlayer[playerCount];
-        this.frame = 0;
-        this.sum = 0;
+        this.frame = -1;
         for (int i = 0; i < players.Length; ++i)
         {
             this.players[i] = new TestPlayer(positions[i]);
@@ -42,75 +40,41 @@ public class TestGameState : IGameState
         Deserialize(br);
     }
 
-    public void GameLoop(byte[] playerInput)
+    public void Setup() {}
+
+    public void GameLoop(PlayerInput[] playerInput)
     {
         frame++;
         for (int i = 0; i < players.Length; ++i)
         {
             int h, v;
-            ParseInputs(playerInput[i], out h, out v);
+            ParseInputs(playerInput[i].rawInput, out h, out v);
             players[i].Move(h, v);
         }
-        foreach (var num in playerInput)
-        {
-            sum += num;
-        }
-    }
-    public override bool Equals(object obj)
-    {
-        return obj is TestGameState state &&
-                frame == state.frame &&
-                sum == state.sum;
     }
 
     public void Serialize(BinaryWriter bw)
     {
         bw.Write(frame);
-        bw.Write(sum);
         for (int i = 0; i < players.Length; ++i)
             players[i].Serialize(bw);
     }
 
     public void Deserialize(BinaryReader br)
     {
-        frame = br.ReadUInt32();
-        sum = br.ReadUInt32();
+        frame = br.ReadInt32();
         for (int i = 0; i < players.Length; ++i)
             players[i].Deserialize(br);
     }
 
-    public string GetStateFrame()
+    public PlayerInput GetLocalInput(int PlayerID)
     {
-        return frame.ToString();
+        return new PlayerInput(ReadInputs(PlayerID));
     }
 
-    public override int GetHashCode()
+    public ushort ReadInputs(int id) 
     {
-        int hashCode = -1214587014;
-        hashCode = hashCode * -1521134295 + frame.GetHashCode();
-        hashCode = hashCode * -1521134295 + sum.GetHashCode();
-        for (int i = 0; i < players.Length; ++i)
-            hashCode = hashCode * -1521134295 + players[i].GetHashCode();
-        return hashCode;
-        //return System.HashCode.Combine(frame, sum);
-    }
-
-    /*public void Load(BinaryReader br) <<< Inherited function
-    {
-        Deserialize(br);
-    }*/
-
-    public byte GetLocalInput(int PlayerID)
-    {
-        byte[] b = new byte[2];
-        b[0] = (byte)ReadInputs(0);
-        b[1] = (byte)ReadInputs(1);
-        return (byte)ReadInputs(PlayerID);
-    }
-
-    public short ReadInputs(int id) 
-    {
-        short input = 0;
+        ushort input = 0;
 
         if (id == 0) {
             if (controls.Player1.Vertical.ReadValue<float>() > 0) {
@@ -163,7 +127,7 @@ public class TestGameState : IGameState
         return input;
     }
 
-    public void ParseInputs(byte input, out int h, out int v)
+    public void ParseInputs(ushort input, out int h, out int v)
     {
         if ((input & TestInputs.INPUT_RIGHT) != 0)
             h = 1;

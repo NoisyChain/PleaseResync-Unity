@@ -1,12 +1,14 @@
 using System.IO;
-namespace PleaseResync.Unity
+namespace PleaseResync
 {
     public interface IGameState
     {
-        void GameLoop(byte[] playerInput);
+        void Setup();
+        void GameLoop(PlayerInput[] playerInput);
         void Serialize(BinaryWriter bw);
         void Deserialize(BinaryReader br);
-        byte GetLocalInput(int PlayerID);
-        string GetStateFrame();
+        PlayerInput GetLocalInput(int PlayerID);
+        //int StateFrame();
+        //uint StateChecksum();
     }
 }

@@ -82,7 +82,7 @@ namespace PleaseResync
     {
         public uint StartFrame;
         public uint EndFrame;
-        public byte[] Input;
+        public PlayerInput[] Input;
 
         public DeviceInputMessage(){ID = 3;}
 
@@ -97,7 +97,9 @@ namespace PleaseResync
             bw.Write(SequenceNumber);
             bw.Write(StartFrame);
             bw.Write(EndFrame);
-            bw.Write(Input);
+            bw.Write(Input.Length);
+            for (int i = 0; i < Input.Length; i++)
+                Input[i].Serialize(bw);
         }
 
         public override void Deserialize(BinaryReader br)
@@ -106,7 +108,9 @@ namespace PleaseResync
             SequenceNumber = br.ReadUInt32();
             StartFrame = br.ReadUInt32();
             EndFrame = br.ReadUInt32();
-            Input = br.ReadBytes(4096);
+            Input = new PlayerInput[br.ReadInt32()];
+            for (int i = 0; i < Input.Length; i++)
+                Input[i].Deserialize(br);
         }
         public override string ToString() { return $"{typeof(DeviceInputMessage)}: {new { StartFrame, EndFrame, Input }}"; }
     }
@@ -136,5 +140,34 @@ namespace PleaseResync
             Frame = br.ReadUInt32();
         }
         public override string ToString() { return $"{typeof(DeviceInputAckMessage)}: {new { Frame }}"; }
+    }
+
+    public class HealthCheckMessage : DeviceMessage
+    {
+        public int Frame;
+        public uint Checksum;
+
+        public HealthCheckMessage(){ID = 5;}
+
+        public HealthCheckMessage(BinaryReader br)
+        {
+            Deserialize(br);
+        }
+
+        public override void Serialize(BinaryWriter bw)
+        {
+            bw.Write(ID);
+            bw.Write(SequenceNumber);
+            bw.Write(Frame);
+            bw.Write(Checksum);
+        }
+        public override void Deserialize(BinaryReader br)
+        {
+            SequenceNumber = br.ReadUInt32();
+            Frame = br.ReadInt32();
+            Checksum = br.ReadUInt32();
+        }
+
+        public override string ToString() { return $"{typeof(HealthCheckMessage)}: {new { Frame, Checksum }}"; }
     }
 }

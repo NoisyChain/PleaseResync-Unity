@@ -252,7 +252,6 @@ GameObject:
   - component: {fileID: 261556874}
   - component: {fileID: 261556876}
   - component: {fileID: 261556875}
-  - component: {fileID: 261556877}
   m_Layer: 5
   m_Name: Ping
   m_TagString: Untagged
@@ -377,20 +376,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 261556873}
   m_CullTransparentMesh: 1
---- !u!114 &261556877
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 261556873}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0078f55b5ec7854a900ff1ab5276e7a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pingText: {fileID: 261556875}
-  pingIP: 127.0.0.1
 --- !u!1 &519569584
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,8 +751,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87c07ba1d0f0a76449a22086ea01ad5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SyncTest: 1
   SimulationInfo: {fileID: 567268697}
   RollbackInfo: {fileID: 1005067959}
+  PingInfo: {fileID: 261556875}
 --- !u!1 &916475773
 GameObject:
   m_ObjectHideFlags: 0
@@ -1556,6 +1543,26 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1067038165749258925, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0

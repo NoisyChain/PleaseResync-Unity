@@ -758,6 +758,26 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1383391142003145263, guid: bf0d7df871f4be346936342ccd72386e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1390324309412901515, guid: bf0d7df871f4be346936342ccd72386e,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -1473,11 +1493,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a549166a21553264db3fc247c97e54a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SyncTest: 1
   SimulationInfo: {fileID: 567268697}
+  RollbackInfo: {fileID: 0}
   PingInfo: {fileID: 261556875}
-  DEVICE_ID: 0
-  LocalAdress: 127.0.0.1
-  Ports: 591b5a1b5b1b5c1b
 --- !u!1 &961739749
 GameObject:
   m_ObjectHideFlags: 0

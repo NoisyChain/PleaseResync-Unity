@@ -6,7 +6,7 @@
 using System;
 using System.IO;
 using UnityEngine;
-using PleaseResync.Unity;
+using PleaseResync;
 
 using static VWConstants;
 
@@ -124,8 +124,7 @@ public class VectorWar : IGameState
 {
     public PlayerInputs controls;
 
-    public uint frame;
-    public uint sum;
+    public int frame = -1;
 
     public string InputsDebug;
 
@@ -136,7 +135,6 @@ public class VectorWar : IGameState
     public void Serialize(BinaryWriter bw) 
     {
         bw.Write(frame);
-        bw.Write(sum);
         bw.Write(_ships.Length);
         for (int i = 0; i < _ships.Length; ++i) {
             _ships[i].Serialize(bw);
@@ -145,8 +143,7 @@ public class VectorWar : IGameState
 
     public void Deserialize(BinaryReader br) 
     {
-        frame = br.ReadUInt32();
-        sum = br.ReadUInt32();
+        frame = br.ReadInt32();
         int length = br.ReadInt32();
         if (length != _ships.Length) {
             _ships = new Ship[length];
@@ -154,11 +151,6 @@ public class VectorWar : IGameState
         for (int i = 0; i < _ships.Length; ++i) {
             _ships[i].Deserialize(br);
         }
-    }
-
-    public string GetStateFrame()
-    {
-        return frame.ToString();
     }
 
     private static float DegToRad(float deg) 
@@ -211,7 +203,7 @@ public class VectorWar : IGameState
         fire = 0;
     }
 
-    public void ParseShipInputs(long inputs, int i, out float heading, out float thrust, out int fire) 
+    public void ParseShipInputs(ushort inputs, int i, out float heading, out float thrust, out int fire) 
     {
         var ship = _ships[i];
 
@@ -344,35 +336,31 @@ public class VectorWar : IGameState
         File.WriteAllText(filename, fp);
     }
 
-    public void GameLoop(byte[] playerInput)
+    public void Setup() {}
+
+    public void GameLoop(PlayerInput[] playerInput)
     {
         frame++;
         for (int i = 0; i < _ships.Length; i++) {
             float thrust, heading;
             int fire;
-            ParseShipInputs(playerInput[i], i, out heading, out thrust, out fire);
+            ParseShipInputs(playerInput[i].rawInput, i, out heading, out thrust, out fire);
             MoveShip(i, heading, thrust, fire);
 
             if (_ships[i].cooldown != 0) {
                 _ships[i].cooldown--;
             }
         }
-        foreach (var num in playerInput)
-        {
-            sum += num;
-        }
     }
 
-    public override bool Equals(object obj)
+    public PlayerInput GetLocalInput(int PlayerID)
     {
-        return obj is VectorWar state &&
-                frame == state.frame &&
-                sum == state.sum;
+        return new PlayerInput(ReadInputs(PlayerID));
     }
 
-    public byte GetLocalInput(int PlayerID)
+    public ushort ReadInputs(int PlayerID)
     {
-        byte input = 0;
+        ushort input = 0;
 
         if (PlayerID == 0) {
             if (controls.Player1.Vertical.ReadValue<float>() > 0) {
@@ -416,16 +404,5 @@ public class VectorWar : IGameState
         }
 
         return input;
-    }
-
-    public override int GetHashCode() 
-    {
-        int hashCode = -1214587014;
-        hashCode = hashCode * -1521134295 + frame.GetHashCode();
-        hashCode = hashCode * -1521134295 + sum.GetHashCode();
-        foreach (var ship in _ships) {
-            hashCode = hashCode * -1521134295 + ship.GetHashCode();
-        }
-        return hashCode;
     }
 }
