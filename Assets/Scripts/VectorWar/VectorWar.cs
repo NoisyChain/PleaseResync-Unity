@@ -338,13 +338,13 @@ public class VectorWar : IGameState
 
     public void Setup() {}
 
-    public void GameLoop(PlayerInput[] playerInput)
+    public void GameLoop(byte[] playerInput)
     {
         frame++;
         for (int i = 0; i < _ships.Length; i++) {
             float thrust, heading;
             int fire;
-            ParseShipInputs(playerInput[i].rawInput, i, out heading, out thrust, out fire);
+            ParseShipInputs(playerInput[i], i, out heading, out thrust, out fire);
             MoveShip(i, heading, thrust, fire);
 
             if (_ships[i].cooldown != 0) {
@@ -353,53 +353,53 @@ public class VectorWar : IGameState
         }
     }
 
-    public PlayerInput GetLocalInput(int PlayerID)
+    public byte[] GetLocalInput(int PlayerID)
     {
-        return new PlayerInput(ReadInputs(PlayerID));
+        return ReadInputs(PlayerID);
     }
 
-    public ushort ReadInputs(int PlayerID)
+    public byte[] ReadInputs(int PlayerID)
     {
-        ushort input = 0;
+        byte[] input = new byte[1];
 
         if (PlayerID == 0) {
             if (controls.Player1.Vertical.ReadValue<float>() > 0) {
-                input |= INPUT_THRUST;
+                input[0] |= INPUT_THRUST;
             }
             if (controls.Player1.Vertical.ReadValue<float>() < 0) {
-                input |= INPUT_BREAK;
+                input[0] |= INPUT_BREAK;
             }
             if (controls.Player1.Horizontal.ReadValue<float>() < 0) {
-                input |= INPUT_ROTATE_LEFT;
+                input[0] |= INPUT_ROTATE_LEFT;
             }
             if (controls.Player1.Horizontal.ReadValue<float>() > 0) {
-                input |= INPUT_ROTATE_RIGHT;
+                input[0] |= INPUT_ROTATE_RIGHT;
             }
             if (controls.Player1.ButtonA.IsInProgress()) {
-                input |= INPUT_FIRE;
+                input[0] |= INPUT_FIRE;
             }
             if (controls.Player1.ButtonB.IsInProgress()) {
-                input |= INPUT_BOMB;
+                input[0] |= INPUT_BOMB;
             }
         }
         else if (PlayerID == 1) {
             if (controls.Player2.Vertical.ReadValue<float>() > 0) {
-                input |= INPUT_THRUST;
+                input[0] |= INPUT_THRUST;
             }
             if (controls.Player2.Vertical.ReadValue<float>() < 0) {
-                input |= INPUT_BREAK;
+                input[0] |= INPUT_BREAK;
             }
             if (controls.Player2.Horizontal.ReadValue<float>() < 0) {
-                input |= INPUT_ROTATE_LEFT;
+                input[0] |= INPUT_ROTATE_LEFT;
             }
             if (controls.Player2.Horizontal.ReadValue<float>() > 0) {
-                input |= INPUT_ROTATE_RIGHT;
+                input[0] |= INPUT_ROTATE_RIGHT;
             }
             if (controls.Player2.ButtonA.IsInProgress()) {
-                input |= INPUT_FIRE;
+                input[0] |= INPUT_FIRE;
             }
             if (controls.Player2.ButtonB.IsInProgress()) {
-                input |= INPUT_BOMB;
+                input[0] |= INPUT_BOMB;
             }
         }
 

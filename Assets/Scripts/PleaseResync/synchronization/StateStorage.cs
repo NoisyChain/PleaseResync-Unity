@@ -10,7 +10,7 @@ namespace PleaseResync
 
         public StateStorage(int maxRollbackFrames)
         {
-            _size = maxRollbackFrames + MAX_STORAGE_SIZE; // +2 for extra space for now. might be removed later
+            _size = maxRollbackFrames + MAX_STORAGE_SIZE;
             _states = new StateStorageEntry[_size];
 
             for (var i = 0; i < _size; i++)

@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Collections.Generic;
-using System;
-//using UnityEngine;
 
 namespace PleaseResync
 {
@@ -125,7 +123,6 @@ namespace PleaseResync
 
         public void HandleMessage(DeviceMessage message)
         {
-            connectionTest = 0;
             switch (message)
             {
                 case DeviceSyncMessage syncMessage:
@@ -158,6 +155,7 @@ namespace PleaseResync
                     Health.Add((healthCheckMessage.Frame, healthCheckMessage.Checksum));
                     break;
             }
+            connectionTest = 0;
         }
 
         public void TestConnection()

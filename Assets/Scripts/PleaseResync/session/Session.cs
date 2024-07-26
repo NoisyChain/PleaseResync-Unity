@@ -103,7 +103,7 @@ namespace PleaseResync
         /// </summary>
         /// <param name="localInput">the local device input for the current frame</param>
         /// <returns>a list of actions to perform in order before calling AdvanceFrame again</returns>
-        public abstract List<SessionAction> AdvanceFrame(PlayerInput[] localInput);
+        public abstract List<SessionAction> AdvanceFrame(byte[] localInput);
         internal protected abstract uint SendMessageTo(uint deviceId, DeviceMessage message);
         internal protected abstract void AddRemoteInput(uint deviceId, DeviceInputMessage message);
 

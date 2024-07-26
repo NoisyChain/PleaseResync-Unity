@@ -755,6 +755,11 @@ MonoBehaviour:
   SimulationInfo: {fileID: 567268697}
   RollbackInfo: {fileID: 1005067959}
   PingInfo: {fileID: 261556875}
+  FrameDelay: 2
+  SimulatedFrameDelay: 0
+  MaxPlayers: 4
+  DeviceCount: 4
+  InputSize: 1
 --- !u!1 &916475773
 GameObject:
   m_ObjectHideFlags: 0

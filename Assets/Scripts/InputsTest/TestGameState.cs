@@ -42,13 +42,13 @@ public class TestGameState : IGameState
 
     public void Setup() {}
 
-    public void GameLoop(PlayerInput[] playerInput)
+    public void GameLoop(byte[] playerInput)
     {
         frame++;
         for (int i = 0; i < players.Length; ++i)
         {
             int h, v;
-            ParseInputs(playerInput[i].rawInput, out h, out v);
+            ParseInputs(playerInput[i], out h, out v);
             players[i].Move(h, v);
         }
     }
@@ -67,60 +67,60 @@ public class TestGameState : IGameState
             players[i].Deserialize(br);
     }
 
-    public PlayerInput GetLocalInput(int PlayerID)
+    public byte[] GetLocalInput(int PlayerID)
     {
-        return new PlayerInput(ReadInputs(PlayerID));
+        return ReadInputs(PlayerID);
     }
 
-    public ushort ReadInputs(int id) 
+    public byte[] ReadInputs(int id) 
     {
-        ushort input = 0;
+        byte[] input = new byte[1];
 
         if (id == 0) {
             if (controls.Player1.Vertical.ReadValue<float>() > 0) {
-                input |= TestInputs.INPUT_UP;
+                input[0] |= TestInputs.INPUT_UP;
             }
             if (controls.Player1.Vertical.ReadValue<float>() < 0) {
-                input |= TestInputs.INPUT_DOWN;
+                input[0] |= TestInputs.INPUT_DOWN;
             }
             if (controls.Player1.Horizontal.ReadValue<float>() < 0) {
-                input |= TestInputs.INPUT_LEFT;
+                input[0] |= TestInputs.INPUT_LEFT;
             }
             if (controls.Player1.Horizontal.ReadValue<float>() > 0) {
-                input |= TestInputs.INPUT_RIGHT;
+                input[0] |= TestInputs.INPUT_RIGHT;
             }
             /*if (UnityEngine.Input.GetButtonDown("Fire1" + (id + 1))) {
-                input |= INPUT_PUNCH;
+                input[0] |= INPUT_PUNCH;
             }
             if (UnityEngine.Input.GetButtonDown("Fire2" + (id + 1))) {
-                input |= INPUT_KICK;
+                input[0] |= INPUT_KICK;
             }
             if (UnityEngine.Input.GetButtonDown("Fire3" + (id + 1))) {
-                input |= INPUT_SPECIAL;
+                input[0] |= INPUT_SPECIAL;
             }*/
         }
         else if (id == 1) {
             //input = 0;
             if (controls.Player2.Vertical.ReadValue<float>() > 0) {
-                input |= TestInputs.INPUT_UP;
+                input[0] |= TestInputs.INPUT_UP;
             }
             if (controls.Player2.Vertical.ReadValue<float>() < 0) {
-                input |= TestInputs.INPUT_DOWN;
+                input[0] |= TestInputs.INPUT_DOWN;
             }
             if (controls.Player2.Horizontal.ReadValue<float>() < 0) {
-                input |= TestInputs.INPUT_LEFT;
+                input[0] |= TestInputs.INPUT_LEFT;
             }
             if (controls.Player2.Horizontal.ReadValue<float>() > 0) {
-                input |= TestInputs.INPUT_RIGHT;
+                input[0] |= TestInputs.INPUT_RIGHT;
             }
             /*if (UnityEngine.Input.GetButtonDown("Fire1" + (id + 1))) {
-                input |= INPUT_PUNCH;
+                input[0] |= INPUT_PUNCH;
             }
             if (UnityEngine.Input.GetButtonDown("Fire2" + (id + 1))) {
-                input |= INPUT_KICK;
+                input[0] |= INPUT_KICK;
             }
             if (UnityEngine.Input.GetButtonDown("Fire3" + (id + 1))) {
-                input |= INPUT_SPECIAL;
+                input[0] |= INPUT_SPECIAL;
             }*/
         }
 

@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
-//using UnityEngine;
 
 namespace PleaseResync
 {
@@ -103,7 +102,7 @@ namespace PleaseResync
             return _allDevices.All(device => device.State == Device.DeviceState.Running);
         }
 
-        public override List<SessionAction> AdvanceFrame(PlayerInput[] localInput)
+        public override List<SessionAction> AdvanceFrame(byte[] localInput)
         {
             Debug.Assert(IsRunning(), "Session must be running before calling AdvanceFrame");
             Debug.Assert(localInput != null);
@@ -133,7 +132,7 @@ namespace PleaseResync
             int inputIndex = 0;
             for (uint i = message.StartFrame; i <= message.EndFrame; i++)
             {
-                PlayerInput[] inputsForFrame = new PlayerInput[message.Input.Length / inputCount];
+                byte[] inputsForFrame = new byte[message.Input.Length / inputCount];
 
                 System.Array.Copy(message.Input, inputIndex * inputSize, inputsForFrame, 0, inputSize);
                 _sync.AddRemoteInput(deviceId, (int)i, inputsForFrame);

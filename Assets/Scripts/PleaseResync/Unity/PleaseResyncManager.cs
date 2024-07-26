@@ -1,10 +1,9 @@
 using UnityEngine;
 using TMPro;
-//using SakugaEngine.Utils;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
-//using SakugaEngine.Game;
 using System.Threading;
 
 namespace PleaseResync
@@ -20,10 +19,13 @@ namespace PleaseResync
 
         private bool Started;
         private bool Replay;
-        private const uint INPUT_SIZE = 1;
-        private const ushort FRAME_DELAY = 2;
-        private uint MAX_PLAYERS = 2;
-        private uint DEVICE_COUNT = 2;
+        [SerializeField] protected ushort FrameDelay = 2;
+        [SerializeField] protected ushort SimulatedFrameDelay = 0;
+        [SerializeField] protected uint InputSize = 1;
+
+        protected uint MaxPlayers = 2;
+        protected uint DeviceCount = 2;
+
         private uint DEVICE_ID;
 
         private string[] Adresses = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
@@ -33,7 +35,7 @@ namespace PleaseResync
 
         LiteNetLibSessionAdapter adapter;
         Session session;
-        PlayerInput[] LastInput;
+        byte[] LastInput;
         List<SessionAction> sessionActions;
         string InputDebug;
         string SimulationText;
@@ -66,10 +68,7 @@ namespace PleaseResync
 
         public void Awake()
         {
-            //SimulationInfo = GetTree().Root.GetNode<Label>("Root/CanvasLayer/PleaseResync_UI/Connection_Status/Simulation_Info");
-            //RollbackInfo = GetTree().Root.GetNode<Label>("Root/CanvasLayer/PleaseResync_UI/Connection_Status/Rollback_Info");
-            //PingInfo = GetTree().Root.GetNode<Label>("Root/CanvasLayer/PleaseResync_UI/Connection_Status/Ping_Info");
-            RecordedInputs.Add(new ReplayInputs(new PlayerInput[0]));
+            RecordedInputs.Add(new ReplayInputs(new byte[0]));
 
             if (SimulationInfo != null) SimulationInfo.text = "";
             if (RollbackInfo != null) RollbackInfo.text = "";
@@ -108,11 +107,6 @@ namespace PleaseResync
             GameLoop();
         }
 
-        void OnDestroy()
-        {
-            CloseGame();
-        }
-
         public void CreateConnections(string[] IPAdresses, ushort[] ports)
         {
             for (uint i = 0; i < IPAdresses.Length; i++)
@@ -127,22 +121,18 @@ namespace PleaseResync
             string tempIP = "";
 
             DEVICE_ID = ID;
-            MAX_PLAYERS = playerCount;
-            DEVICE_COUNT = playerCount;
+            MaxPlayers = playerCount;
+            DeviceCount = playerCount;
 
             sessionState = state;
-
             sessionState.Setup();
-            
             adapter = new LiteNetLibSessionAdapter(Adresses[DEVICE_ID], Ports[DEVICE_ID]);
-
-            session = new Peer2PeerSession(INPUT_SIZE, DEVICE_COUNT, MAX_PLAYERS, false, adapter);
-
-            LastInput = new PlayerInput[INPUT_SIZE];
-
-            session.SetLocalDevice(DEVICE_ID, 1, FRAME_DELAY);
+           
+            session = new Peer2PeerSession(InputSize, DeviceCount, MaxPlayers, false, adapter);
+            LastInput = new byte[InputSize];
+            session.SetLocalDevice(DEVICE_ID, 1, FrameDelay);
             
-            for (uint i = 0; i < DEVICE_COUNT; i++)
+            for (uint i = 0; i < DeviceCount; i++)
             {
                 if (i != DEVICE_ID)
                 {
@@ -160,12 +150,14 @@ namespace PleaseResync
 
         protected void StartOfflineGame(IGameState state, uint playerCount)
         {
+            MaxPlayers = playerCount;
+
             sessionState = state;
             sessionState.Setup();
 
-            session = new Peer2PeerSession(INPUT_SIZE, 1, playerCount, true, null);
-            LastInput = new PlayerInput[(int)playerCount];
-            session.SetLocalDevice(DEVICE_ID, playerCount, FRAME_DELAY);
+            session = new Peer2PeerSession(InputSize, 1, MaxPlayers, true, null);
+            LastInput = new byte[(int)(MaxPlayers * InputSize)];
+            session.SetLocalDevice(DEVICE_ID, MaxPlayers, SimulatedFrameDelay);
 
             if (RollbackInfo != null) RollbackInfo.text = "";
             if (PingInfo != null) PingInfo.text = "";
@@ -176,12 +168,14 @@ namespace PleaseResync
 
         protected void StartReplay(IGameState state, uint playerCount)
         {
+            MaxPlayers = playerCount;
+
             sessionState = state;
             sessionState.Setup();
 
-            session = new Peer2PeerSession(INPUT_SIZE, 1, playerCount, true, null);
-            LastInput = new PlayerInput[(int)playerCount];
-            session.SetLocalDevice(DEVICE_ID, playerCount, FRAME_DELAY);
+            session = new Peer2PeerSession(InputSize, 1, MaxPlayers, true, null);
+            LastInput = new byte[(int)(MaxPlayers * InputSize)];
+            session.SetLocalDevice(DEVICE_ID, MaxPlayers, 0);
 
             if (RollbackInfo != null) RollbackInfo.text = "";
             if (PingInfo != null) PingInfo.text = "";
@@ -195,8 +189,11 @@ namespace PleaseResync
             if (Replay)
                 LastInput = ReadInputs(session.Frame());
             else
-                for (int i = 0; i < LastInput.Length; i++)
-                    LastInput[i] = SyncTest ? GetRandomInput() : sessionState.GetLocalInput(i);
+                for (int i = 0; i < LastInput.Length / InputSize; i++)
+                {
+                    byte[] inputs = SyncTest ? GetRandomInput() : sessionState.GetLocalInput(i);
+                    Array.Copy(inputs, 0, LastInput, i * InputSize, inputs.Length);
+                }
 
             sessionActions = session.AdvanceFrame(LastInput);
             
@@ -258,7 +255,7 @@ namespace PleaseResync
             SimulationInfo.text = "Disconnected";
         }
 
-        private string InputConstructor(PlayerInput[] PlayerInputs)
+        private string InputConstructor(byte[] PlayerInputs)
         {
             string finalString = " ";
 
@@ -271,7 +268,7 @@ namespace PleaseResync
             return finalString;
         }
 
-        private void RecordInput(int frame, PlayerInput[] inputs)
+        private void RecordInput(int frame, byte[] inputs)
         {
             if (frame >= RecordedInputs.Count)
                 RecordedInputs.Add(new ReplayInputs());
@@ -280,14 +277,20 @@ namespace PleaseResync
             
         }
 
-        private PlayerInput[] ReadInputs(int frame)
+        private byte[] ReadInputs(int frame)
         {
             return RecordedInputs[frame].inputs;
         }
 
-        private PlayerInput GetRandomInput()
+        private byte[] GetRandomInput()
         {
-            return new PlayerInput(Platform.GetRandomUnsignedShort());
+            byte[] cnv = new byte[InputSize];
+            for (int i = 0; i < cnv.Length; i++)
+            {
+                cnv[i] = (byte)Platform.GetRandomUnsignedShort();
+            }
+
+            return cnv;
         }
 
         public virtual void OnlineGame(uint maxPlayers, uint ID){}
@@ -297,9 +300,9 @@ namespace PleaseResync
 
     public struct ReplayInputs
     {
-        public PlayerInput[] inputs;
+        public byte[] inputs;
 
-        public ReplayInputs(PlayerInput[] i)
+        public ReplayInputs(byte[] i)
         {
             inputs = i;
         }

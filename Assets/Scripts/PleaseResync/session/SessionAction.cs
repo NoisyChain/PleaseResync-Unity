@@ -64,9 +64,9 @@ namespace PleaseResync
     /// </summary>
     public class SessionAdvanceFrameAction : SessionAction
     {
-        public PlayerInput[] Inputs;
+        public byte[] Inputs;
 
-        internal SessionAdvanceFrameAction(int frame, PlayerInput[] inputs)
+        internal SessionAdvanceFrameAction(int frame, byte[] inputs)
         {
             Debug.Assert(inputs != null);
 

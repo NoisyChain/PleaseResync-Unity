@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System;
-//using UnityEngine;
 
 namespace PleaseResync
 {
@@ -23,6 +22,8 @@ namespace PleaseResync
 
         private SyncState _syncState;
 
+        private uint _lastSentChecksum;
+
         public Sync(Device[] devices, uint inputSize, bool offline)
         {
             _devices = devices;
@@ -34,7 +35,7 @@ namespace PleaseResync
             _syncState = SyncState.SYNCING;
         }
 
-        public void AddRemoteInput(uint deviceId, int frame, PlayerInput[] deviceInput)
+        public void AddRemoteInput(uint deviceId, int frame, byte[] deviceInput)
         {
             // only allow adding input to the local device
             Debug.Assert(_devices[deviceId].Type == Device.DeviceType.Remote);
@@ -64,12 +65,12 @@ namespace PleaseResync
             _deviceInputs[deviceId] = new InputQueue(_inputSize, 1);
         }
 
-        public List<SessionAction> AdvanceSync(uint localDeviceId, PlayerInput[] deviceInput)
+        public List<SessionAction> AdvanceSync(uint localDeviceId, byte[] deviceInput)
         {
             // should be called after polling the remote devices for their messages.
             Debug.Assert(deviceInput != null);
 
-            bool isTimeSynced = _offlinePlay ? true : _timeSync.IsTimeSynced(_devices);
+            bool isTimeSynced =  _offlinePlay ? true : _timeSync.IsTimeSynced(_devices);
             _syncState = isTimeSynced ? SyncState.RUNNING : SyncState.SYNCING;
 
             UpdateSyncFrame();
@@ -98,10 +99,10 @@ namespace PleaseResync
                     UnityEngine.Debug.Log($"Rollback detected from frame {_timeSync.SyncFrame + 1} to frame {_timeSync.LocalFrame} ({RollbackFrames() + 1} frames)");
                 }
 
+                HealthCheck();
+
                 if (isTimeSynced)
                 {
-                    HealthCheck(); //<<< Working now I guess
-
                     _timeSync.LocalFrame++;
 
                     AddLocalInput(localDeviceId, deviceInput);
@@ -131,7 +132,7 @@ namespace PleaseResync
         public void LookForDisconnectedDevices()
         {
             if (_syncState == SyncState.DESYNCED) return;
-            
+
             foreach (var device in _devices)
             {
                 if (device.State == Device.DeviceState.Disconnected)
@@ -153,7 +154,7 @@ namespace PleaseResync
                     uint startingFrame = _timeSync.LocalFrame <= limitFrames ? 0 : (uint)_timeSync.LocalFrame - limitFrames;
                     uint finalFrame = (uint)(_timeSync.LocalFrame + _deviceInputs[localDeviceId].GetFrameDelay());
 
-                    var combinedInput = new List<PlayerInput>();
+                    var combinedInput = new List<byte>();
 
                     for (uint i = startingFrame; i <= finalFrame; i++)
                     {
@@ -177,6 +178,8 @@ namespace PleaseResync
 
             uint checksum = _stateStorage.GetChecksum(frame);
 
+            if (_lastSentChecksum == checksum) return;
+
             HealthCheckBus++;
             if (HealthCheckBus == HealthCheckTime)
             {
@@ -192,6 +195,7 @@ namespace PleaseResync
                         UnityEngine.Debug.Log($"Sending HealthCheck message: {frame}, {checksum}");
                     }
                 }
+                _lastSentChecksum = checksum;
                 HealthCheckBus = 0;
             }
         }
@@ -250,14 +254,14 @@ namespace PleaseResync
             _timeSync.SyncFrame = foundFrame;
         }
 
-        private void AddLocalInput(uint deviceId, PlayerInput[] deviceInput)
+        private void AddLocalInput(uint deviceId, byte[] deviceInput)
         {
             // only allow adding input to the local device
             Debug.Assert(_devices[deviceId].Type == Device.DeviceType.Local);
             AddDeviceInput(_timeSync.LocalFrame, deviceId, deviceInput);
         }
         
-        private void AddDeviceInput(int frame, uint deviceId, PlayerInput[] deviceInput)
+        private void AddDeviceInput(int frame, uint deviceId, byte[] deviceInput)
         {
             Debug.Assert(deviceInput.Length == _devices[deviceId].PlayerCount * _inputSize,
              "the length of the given deviceInput isnt correct!");
