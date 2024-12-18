@@ -41,29 +41,15 @@ namespace PleaseResync
         string SimulationText;
         List<ReplayInputs> RecordedInputs = new List<ReplayInputs>();
 
-        Thread PingThread;
-
-        System.Net.NetworkInformation.Ping p = new System.Net.NetworkInformation.Ping();
-        PingReply r;
-
-        private void StartPinging(string pingIP)
-        {
-            PingThread = new Thread(() => Ping(pingIP));
-            PingThread.IsBackground = true;
-            PingThread.Start();
-        }
-
-        private void Ping(string PingIP)
-        {
-            while(Started)
-                r = p.Send(PingIP);
-        }
-
         private string ShowPingInfo()
         {
-            if (r == null) return "";
-            if (r.Status != IPStatus.Success) return "";
-            return $"Ping: {r.RoundtripTime} ms";
+            int finalPing = 0;
+            for(uint id = 0; id < session.AllDevices.Length; id++)
+            {
+                if (session.AllDevices[id].GetRTT() > finalPing)
+                    finalPing = session.AllDevices[id].GetRTT();
+            }
+            return finalPing.ToString();
         }
 
         public void Awake()
@@ -101,7 +87,7 @@ namespace PleaseResync
                 if (!session.IsRunning()) return;
                 
                 if (RollbackInfo != null) RollbackInfo.text = "RBF: " + session.RollbackFrames();
-                if (PingInfo != null) PingInfo.text = ShowPingInfo();
+                if (PingInfo != null) PingInfo.text = "Ping: " + ShowPingInfo() + "ms";
             }
 
             GameLoop();
@@ -118,8 +104,6 @@ namespace PleaseResync
 
         protected void StartOnlineGame(IGameState state, uint playerCount, uint ID)
         {
-            string tempIP = "";
-
             DEVICE_ID = ID;
             MaxPlayers = playerCount;
             DeviceCount = playerCount;
@@ -136,16 +120,13 @@ namespace PleaseResync
             {
                 if (i != DEVICE_ID)
                 {
-                    session.AddRemoteDevice(i, 1, LiteNetLibSessionAdapter.CreateRemoteConfig(Adresses[i], Ports[i]));
-                    tempIP = Adresses[i];
-                    
+                    session.AddRemoteDevice(i, 1, LiteNetLibSessionAdapter.CreateRemoteConfig(Adresses[i], Ports[i]));                    
                     Debug.Log($"Device {i} created");
                 }
             }
             
             Replay = false;
             Started = true;
-            StartPinging(tempIP);
         }
 
         protected void StartOfflineGame(IGameState state, uint playerCount)
@@ -209,12 +190,12 @@ namespace PleaseResync
                     case SessionLoadGameAction LGAction:
                         MemoryStream readerStream = new MemoryStream(LGAction.Load());
                         BinaryReader reader = new BinaryReader(readerStream);
-                        sessionState.Deserialize(reader);
+                        sessionState.LoadState(reader);
                         break;
                     case SessionSaveGameAction SGAction:
                         MemoryStream writerStream = new MemoryStream();
                         BinaryWriter writer = new BinaryWriter(writerStream);
-                        sessionState.Serialize(writer);
+                        sessionState.SaveState(writer);
                         byte[] state = writerStream.ToArray();
                         SGAction.Save(state, Platform.GetChecksum(state));
                         break;

@@ -132,7 +132,7 @@ public class VectorWar : IGameState
 
     public static Rect _bounds = new Rect(0, 0, 640, 480);
 
-    public void Serialize(BinaryWriter bw) 
+    public void SaveState(BinaryWriter bw) 
     {
         bw.Write(frame);
         bw.Write(_ships.Length);
@@ -141,7 +141,7 @@ public class VectorWar : IGameState
         }
     }
 
-    public void Deserialize(BinaryReader br) 
+    public void LoadState(BinaryReader br) 
     {
         frame = br.ReadInt32();
         int length = br.ReadInt32();

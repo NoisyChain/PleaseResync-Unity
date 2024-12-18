@@ -37,7 +37,7 @@ public class TestGameState : IGameState
 
     public TestGameState(BinaryReader br)
     {
-        Deserialize(br);
+        LoadState(br);
     }
 
     public void Setup() {}
@@ -53,14 +53,14 @@ public class TestGameState : IGameState
         }
     }
 
-    public void Serialize(BinaryWriter bw)
+    public void SaveState(BinaryWriter bw)
     {
         bw.Write(frame);
         for (int i = 0; i < players.Length; ++i)
             players[i].Serialize(bw);
     }
 
-    public void Deserialize(BinaryReader br)
+    public void LoadState(BinaryReader br)
     {
         frame = br.ReadInt32();
         for (int i = 0; i < players.Length; ++i)

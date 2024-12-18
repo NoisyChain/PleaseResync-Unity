@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Collections.Generic;
+using System;
 
 namespace PleaseResync
 {
@@ -43,6 +44,10 @@ namespace PleaseResync
         private const uint SYNC_NEXT_RETRY_INTERVAL = 2000;
         private const uint SYNC_FIRST_RETRY_INTERVAL = 500;
         private const ushort CONNECTION_TEST_LIMIT = 300;
+        //The ping's final value is always a value minimum of ~33 miliseconds
+        //This is the duration of 2 game ticks and doesn't relate to the
+        //network's quality. This value exists to exclude this extra from the final result.
+        private const int PING_ERRROR_MARGIN = 33;
 
         private ushort connectionTest;
 
@@ -54,6 +59,8 @@ namespace PleaseResync
         private Queue<DeviceMessageQueueEntry> _sendQueue;
         public List<(int, uint)> Health = new List<(int, uint)>();
 
+
+        private uint RTT = 0;
         #endregion
 
         public Device(Session session, uint deviceId, uint playerCount, DeviceType deviceType)
@@ -102,6 +109,7 @@ namespace PleaseResync
         public void FinishedSyncing()
         {
             State = DeviceState.Running;
+            //SendMessage(new PingMessage { PingTime = Platform.GetCurrentTimeMS(), Returning = false });
             //var ev = new DeviceSyncedEvent { DeviceId = Id };
             //_session.AddSessionEvent(ev);
         }
@@ -154,6 +162,14 @@ namespace PleaseResync
                 case HealthCheckMessage healthCheckMessage:
                     Health.Add((healthCheckMessage.Frame, healthCheckMessage.Checksum));
                     break;
+                case PingMessage pingMessage:
+                    if (!pingMessage.Returning)
+                    {
+                        SendMessage(new PingMessage { PingTime = pingMessage.PingTime, Returning = true });
+                    }
+                    else
+                        RTT = Platform.GetCurrentTimeMS() - pingMessage.PingTime;
+                    break;
             }
             connectionTest = 0;
         }
@@ -182,6 +198,8 @@ namespace PleaseResync
                 _session.SendMessageTo(Id, _sendQueue.Dequeue().Message);
             }
         }
+
+        public int GetRTT() => UnityEngine.Mathf.Max(0, (int)RTT - PING_ERRROR_MARGIN);
         #endregion
     }
 
