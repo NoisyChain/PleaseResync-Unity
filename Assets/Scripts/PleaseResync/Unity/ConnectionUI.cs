@@ -8,13 +8,17 @@ namespace PleaseResync.Unity
     {
         private const uint MAX_CONNECTIONS = 4;
         private PleaseResyncManager manager;
-        public ConnectionAddress[] connectionAddresses;
+        public ConnectionAddress[] playerConnections;
+        public ConnectionAddress[] spectatorConnections;
         public TMP_InputField PlayerCount;
         public TMP_InputField PlayerID;
+        public TMP_InputField SpectatorCount;
         public Button ConnectGameButton;
         public Button LocalGameButton;
         public Button ReplayButton;
         public Button CloseGameButton;
+        public Toggle IsSpectatorMode;
+        public GameObject SpectatorMenuObject;
         public GameObject ConnectionMenuObject;
         public GameObject ConnectedMenuObject;
 
@@ -29,11 +33,15 @@ namespace PleaseResync.Unity
 
         private void StartOnlineGame()
         {
-            uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
+            uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 0;
+            uint finalSpectatorCount = SpectatorCount.text.Trim().Length > 0 ? uint.Parse(SpectatorCount.text) : 0;
             uint finalPlayerID = PlayerID.text.Trim().Length > 0 ? uint.Parse(PlayerID.text) : 0;
-            manager.CreateConnections(CreateAddressList(), CreatePortList());
-            manager.OnlineGame(finalPlayerCount, finalPlayerID);
+            bool spectate = IsSpectatorMode.isOn;
+            manager.CreatePlayerConnections(CreateAddressesList(finalPlayerCount), CreatePortsList(finalPlayerCount));
+            manager.CreateSpectatorConnections(CreateAddressesList(finalSpectatorCount, true), CreatePortsList(finalSpectatorCount, true));
+            manager.OnlineGame(spectate, finalPlayerCount, finalSpectatorCount, finalPlayerID);
             ConnectionMenuObject.SetActive(false);
+            SpectatorMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Online game started.");
         }
@@ -43,6 +51,7 @@ namespace PleaseResync.Unity
             uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
             manager.LocalGame(finalPlayerCount);
             ConnectionMenuObject.SetActive(false);
+            SpectatorMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Local game started.");
         }
@@ -52,6 +61,7 @@ namespace PleaseResync.Unity
             uint finalPlayerCount = PlayerCount.text.Trim().Length > 0 ? uint.Parse(PlayerCount.text) : 2;
             manager.ReplayMode(finalPlayerCount);
             ConnectionMenuObject.SetActive(false);
+            SpectatorMenuObject.SetActive(false);
             ConnectedMenuObject.SetActive(true);
             Debug.Log("Executing replay...");
         }
@@ -60,29 +70,40 @@ namespace PleaseResync.Unity
         {
             manager.CloseGame();
             ConnectionMenuObject.SetActive(true);
+            SpectatorMenuObject.SetActive(true);
             ConnectedMenuObject.SetActive(false);
             Debug.Log("Game aborted.");
         }
 
-        private string[] CreateAddressList()
+        private string[] CreateAddressesList(uint length, bool isSpectator = false)
         {
-            string[] temp = new string[MAX_CONNECTIONS];
+            string[] temp = new string[length];
             for (int i = 0; i < temp.Length; ++i)
             {
-                string address = connectionAddresses[i].IPField.text.Trim();
-                temp[i] = address.Length > 0 ? address : "";
+                string address = "";
+                if (isSpectator)
+                    spectatorConnections[i].IPField.text.Trim();
+                else
+                    playerConnections[i].IPField.text.Trim();
+                
+                temp[i] = address.Length > 0 ? address : "127.0.0.1";
             }
 
             return temp;
         }
 
-        private ushort[] CreatePortList()
+        private ushort[] CreatePortsList(uint length, bool isSpectator = false)
         {
-            ushort[] temp = new ushort[MAX_CONNECTIONS];
+            ushort[] temp = new ushort[length];
+            int num = isSpectator ? 8000 : 7000;
             for (int i = 0; i < temp.Length; ++i)
             {
-                string port = connectionAddresses[0].PortField.text.Trim();
-                temp[i] = port.Length > 0 ? ushort.Parse(port) : (ushort)0;
+                string port = "";
+                if (isSpectator)
+                    spectatorConnections[i].PortField.text.Trim();
+                else
+                    playerConnections[i].PortField.text.Trim();
+                temp[i] = port.Length > 0 ? ushort.Parse(port) : (ushort)(num + i + 1);
             }
 
             return temp;

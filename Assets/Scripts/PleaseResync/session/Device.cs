@@ -88,13 +88,14 @@ namespace PleaseResync
         {
             uint now = Platform.GetCurrentTimeMS();
 
-            if (Type == DeviceType.Remote)
+            if (Type != DeviceType.Local)
             {
                 uint interval = _syncRoundtripsRemaining == NUM_SYNC_ROUNDTRIPS ? SYNC_FIRST_RETRY_INTERVAL : SYNC_NEXT_RETRY_INTERVAL;
                 if (_lastSendTime + interval < now)
                 {
                     _syncRoundtripsRandomRequest = Platform.GetRandomUnsignedShort();
                     SendMessage(new DeviceSyncMessage { DeviceId = Id, PlayerCount = PlayerCount, RandomRequest = _syncRoundtripsRandomRequest });
+                    //GD.Print($"Sent SyncMsg To Device {Id}: T({Type})");
                 }
             }
         }
@@ -116,6 +117,7 @@ namespace PleaseResync
 
         public void EndConnection()
         {
+            Platform.Log($"Connection lost with Device {Id}: T({Type})");
             State = DeviceState.Disconnected;
         }
         #endregion
@@ -134,11 +136,11 @@ namespace PleaseResync
             switch (message)
             {
                 case DeviceSyncMessage syncMessage:
-                    Debug.Assert(syncMessage.PlayerCount == _session.AllDevices[syncMessage.DeviceId].PlayerCount);
+                    Debug.Assert(Type == DeviceType.Spectator || _session.LocalDevice == null || syncMessage.PlayerCount == _session.AllDevices[syncMessage.DeviceId].PlayerCount);
                     SendMessage(new DeviceSyncConfirmMessage { DeviceId = Id, PlayerCount = PlayerCount, RandomResponse = syncMessage.RandomRequest });
                     break;
                 case DeviceSyncConfirmMessage syncConfirmMessage:
-                    Debug.Assert(syncConfirmMessage.PlayerCount == _session.AllDevices[syncConfirmMessage.DeviceId].PlayerCount);
+                    Debug.Assert(Type == DeviceType.Spectator || _session.LocalDevice == null || syncConfirmMessage.PlayerCount == _session.AllDevices[syncConfirmMessage.DeviceId].PlayerCount);
                     if (syncConfirmMessage.RandomResponse == _syncRoundtripsRandomRequest)
                     {
                         _syncRoundtripsRemaining -= 1;
@@ -166,9 +168,11 @@ namespace PleaseResync
                     if (!pingMessage.Returning)
                     {
                         SendMessage(new PingMessage { PingTime = pingMessage.PingTime, Returning = true });
+                        //GD.Print($"Pinging Back (Time: {pingMessage.PingTime})");
                     }
                     else
                         RTT = Platform.GetCurrentTimeMS() - pingMessage.PingTime;
+                        //GD.Print($"Ping is {RTT} ms");
                     break;
             }
             connectionTest = 0;
@@ -199,7 +203,7 @@ namespace PleaseResync
             }
         }
 
-        public int GetRTT() => UnityEngine.Mathf.Max(0, (int)RTT - PING_ERRROR_MARGIN);
+        public int GetRTT() => Math.Max(0, (int)RTT - PING_ERRROR_MARGIN);
         #endregion
     }
 

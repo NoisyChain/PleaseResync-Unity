@@ -10,6 +10,7 @@ namespace PleaseResync
 
         private readonly uint _inputSize;
         private readonly Device[] _devices;
+        private readonly List<Device> _spectators;
 
         private TimeSync _timeSync;
         private InputQueue[] _deviceInputs;
@@ -23,8 +24,9 @@ namespace PleaseResync
         private SyncState _syncState;
 
         private uint _lastSentChecksum;
+        private uint[] rollbackFrames;
 
-        public Sync(Device[] devices, uint inputSize, bool offline)
+        public Sync(Device[] devices, uint inputSize, bool offline, List<Device> spectators = null)
         {
             _devices = devices;
             _inputSize = inputSize;
@@ -33,6 +35,8 @@ namespace PleaseResync
             _stateStorage = new StateStorage(TimeSync.MaxRollbackFrames);
             _deviceInputs = new InputQueue[_devices.Length];
             _syncState = SyncState.SYNCING;
+            _spectators = spectators ?? new List<Device>();
+            rollbackFrames = new uint[16];
         }
 
         public void AddRemoteInput(uint deviceId, int frame, int advantage, byte[] deviceInput)
@@ -70,7 +74,7 @@ namespace PleaseResync
             // should be called after polling the remote devices for their messages.
             Debug.Assert(deviceInput != null);
 
-            bool isTimeSynced =  _offlinePlay ? true : _timeSync.IsTimeSynced(_devices);
+            bool isTimeSynced = _offlinePlay ? true : _timeSync.IsTimeSynced(_devices);
             _syncState = isTimeSynced ? SyncState.RUNNING : SyncState.SYNCING;
 
             UpdateSyncFrame();
@@ -78,7 +82,7 @@ namespace PleaseResync
             var actions = new List<SessionAction>();
 
             if (!_offlinePlay)
-            {                
+            {
                 // create savestate at the initialFrame to support rolling back to it
                 // for example if initframe = 0 then 0 will be first save option to rollback to.
                 if (_timeSync.LocalFrame == TimeSync.InitialFrame)
@@ -96,12 +100,14 @@ namespace PleaseResync
                         actions.Add(new SessionSaveGameAction(i, _stateStorage));
                     }
 
-                    UnityEngine.Debug.Log($"Rollback detected from frame {_timeSync.SyncFrame + 1} to frame {_timeSync.LocalFrame} ({RollbackFrames() + 1} frames)");
+                    Platform.Log($"Rollback detected from frame {_timeSync.SyncFrame + 1} to frame {_timeSync.LocalFrame} ({RollbackFrames() + 1} frames)");
                 }
-                
+
                 PingDevices();
                 HealthCheck();
-                
+
+                // always send spectator inputs regardless of time sync
+                SendSpectatorInputs();
 
                 if (isTimeSynced)
                 {
@@ -122,7 +128,67 @@ namespace PleaseResync
 
                 actions.Add(new SessionAdvanceFrameAction(_timeSync.LocalFrame, GetFrameInput(_timeSync.LocalFrame).Inputs));
             }
+            rollbackFrames[_timeSync.LocalFrame % rollbackFrames.Length] = RollbackFrames();
+
             return actions;
+        }
+
+        private void SendSpectatorInputs()
+        {
+            // no spectators? dont send inputs
+            if (_spectators.Count == 0) return;
+
+            int maxFrame = _timeSync.SyncFrame;
+            int minFrame = Math.Max(0, maxFrame - (TimeSync.MaxRollbackFrames - 1));
+
+            // if the spectators are keeping up well we can shorten the range
+            int minAck = int.MaxValue;
+            foreach (var spectator in _spectators)
+            {
+                if (spectator.State == Device.DeviceState.Running) 
+                {
+                    minAck = (int)Math.Min(spectator.LastAckedInputFrame, minAck);
+                }
+            }
+
+            if(minAck != int.MaxValue)
+            {
+                minFrame = Math.Max(minFrame, minAck);
+            }
+
+            // send the inputs
+            var sendInput = new List<byte>();
+            for (int i = minFrame; i <= maxFrame; i++)
+            {
+                sendInput.AddRange(GetFrameInput(i).Inputs);
+            }
+
+            //GD.Print($"maxFrame: {maxFrame}, minFrame: {minFrame}, ackframe: {minAck}, inplength: {sendInput.Count}");
+
+            foreach (var spectator in _spectators)
+            {
+                spectator.SendMessage(new DeviceInputMessage
+                {
+                    Advantage = 0,
+                    StartFrame = (uint)minFrame,
+                    EndFrame = (uint)maxFrame,
+                    Input = sendInput.ToArray()
+                });
+            }
+        }
+
+        private uint GetAverageRollbackFrames()
+        {
+            float sumFrames = 0f;
+            
+            for(int i = 0; i < rollbackFrames.Length; i++)
+            {
+                sumFrames += rollbackFrames[i];
+            }
+
+            sumFrames /= rollbackFrames.Length;
+
+            return (uint)Math.Round(sumFrames);
         }
 
         private void HealthCheck()
@@ -171,11 +237,13 @@ namespace PleaseResync
                     //TODO: replace it for something more optimized
                     uint limitFrames = TimeSync.MaxRollbackFrames - 1;
                     uint startingFrame = _timeSync.LocalFrame <= limitFrames ? 0 : (uint)_timeSync.LocalFrame - limitFrames;
+
                     uint finalFrame = (uint)(_timeSync.LocalFrame + _deviceInputs[localDeviceId].GetFrameDelay());
 
                     var combinedInput = new List<byte>();
 
                     for (uint i = startingFrame; i <= finalFrame; i++)
+                    //for (uint i = device.LastAckedInputFrame; i <= finalFrame; i++)
                     {
                         combinedInput.AddRange(GetDeviceInput((int)i, localDeviceId).Inputs);
                     }
@@ -183,6 +251,7 @@ namespace PleaseResync
                     device.SendMessage(new DeviceInputMessage
                     {
                         StartFrame = startingFrame,
+                        //StartFrame = device.LastAckedInputFrame,
                         EndFrame = finalFrame,
                         Advantage = _timeSync.LocalFrameAdvantage,
                         Input = combinedInput.ToArray()
@@ -230,7 +299,7 @@ namespace PleaseResync
                         {
                             device.State = Device.DeviceState.Disconnected;
                             _syncState = SyncState.DESYNCED;
-                            UnityEngine.Debug.LogError($"State mismatch found.({health.Item2} : {_stateStorage.GetChecksum(health.Item1)})");
+                            Platform.Log($"State mismatch found.({health.Item2} : {_stateStorage.GetChecksum(health.Item1)})", Platform.DebugType.Error);
                             break;
                         }
                     }
@@ -278,7 +347,7 @@ namespace PleaseResync
             Debug.Assert(_devices[deviceId].Type == Device.DeviceType.Local);
             AddDeviceInput(_timeSync.LocalFrame, deviceId, deviceInput);
         }
-        
+
         private void AddDeviceInput(int frame, uint deviceId, byte[] deviceInput)
         {
             Debug.Assert(deviceInput.Length == _devices[deviceId].PlayerCount * _inputSize,
@@ -322,7 +391,8 @@ namespace PleaseResync
         public int FramesAhead() => _timeSync.LocalFrameAdvantage;
         public int RemoteFramesAhead() => _timeSync.RemoteFrameAdvantage;
         public int FrameDifference() => _timeSync.FrameAdvantageDifference;
-        public uint RollbackFrames() => (uint) UnityEngine.Mathf.Max(0, _timeSync.LocalFrame - (_timeSync.SyncFrame + 1));
+        public uint RollbackFrames() => (uint)Math.Max(0, _timeSync.LocalFrame - (_timeSync.SyncFrame + 1));
+        public uint AverageRollbackFrames() => GetAverageRollbackFrames();
         public SyncState State() => _syncState;
     }
 }

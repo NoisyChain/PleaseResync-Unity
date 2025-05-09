@@ -67,7 +67,9 @@ public class TestGameState : IGameState
             players[i].Deserialize(br);
     }
 
-    public byte[] GetLocalInput(int PlayerID)
+    public void Render() {}
+
+    public byte[] GetLocalInput(int PlayerID, int InputSize)
     {
         return ReadInputs(PlayerID);
     }

@@ -97,6 +97,9 @@ namespace PleaseResync
                 case 5:
                     finalMessage = new HealthCheckMessage(br);
                     break;
+                case 6:
+                    finalMessage = new PingMessage(br);
+                    break;
             }
 
             return finalMessage;

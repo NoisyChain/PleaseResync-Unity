@@ -29,6 +29,8 @@ namespace PleaseResync
         /// </summary>
         /// <param name="br">Deserialization</param>
         void LoadState(BinaryReader br);
+
+        void Render();
         
         /// <summary>
         /// GetLocalInput()
@@ -36,6 +38,6 @@ namespace PleaseResync
         /// </summary>
         /// <param name="PlayerID">The selected player's ID</param>
         /// <returns>A byte array to use in the simulation by the specified player</returns>
-        byte[] GetLocalInput(int PlayerID);
+        byte[] GetLocalInput(int PlayerID, int InputSize);
     }
 }
