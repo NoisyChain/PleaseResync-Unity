@@ -233,10 +233,10 @@ namespace PleaseResync
             {
                 if (device.Type == Device.DeviceType.Remote)
                 {
-                    //Using a somewhat fixed value for the starting frame to compensate packet loss
-                    //TODO: replace it for something more optimized
+                    //Replaced the fixed value by SyncFrame, no issues so far
                     //uint limitFrames = TimeSync.MaxRollbackFrames - 1;
                     //uint startingFrame = _timeSync.LocalFrame <= limitFrames ? 0 : (uint)_timeSync.LocalFrame - limitFrames;
+
                     uint startingFrame = (uint)_timeSync.SyncFrame;
 
                     uint finalFrame = (uint)(_timeSync.LocalFrame + _deviceInputs[localDeviceId].GetFrameDelay());
@@ -244,7 +244,6 @@ namespace PleaseResync
                     var combinedInput = new List<byte>();
 
                     for (uint i = startingFrame; i <= finalFrame; i++)
-                    //for (uint i = device.LastAckedInputFrame; i <= finalFrame; i++)
                     {
                         combinedInput.AddRange(GetDeviceInput((int)i, localDeviceId).Inputs);
                     }
@@ -252,7 +251,6 @@ namespace PleaseResync
                     device.SendMessage(new DeviceInputMessage
                     {
                         StartFrame = startingFrame,
-                        //StartFrame = device.LastAckedInputFrame,
                         EndFrame = finalFrame,
                         Advantage = _timeSync.LocalFrameAdvantage,
                         Input = combinedInput.ToArray()
