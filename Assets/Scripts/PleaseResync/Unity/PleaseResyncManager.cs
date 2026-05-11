@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
-using System.IO;
+using MessagePack;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -238,15 +238,10 @@ namespace PleaseResync
                             if (!Replay) RecordInput(AFAction.Frame, AFAction.Inputs);
                             break;
                         case SessionLoadGameAction LGAction:
-                            MemoryStream readerStream = new MemoryStream(LGAction.Load());
-                            BinaryReader reader = new BinaryReader(readerStream);
-                            sessionState.LoadState(reader);
+                            sessionState.LoadState(LGAction.Load());
                             break;
                         case SessionSaveGameAction SGAction:
-                            MemoryStream writerStream = new MemoryStream();
-                            BinaryWriter writer = new BinaryWriter(writerStream);
-                            sessionState.SaveState(writer);
-                            byte[] state = writerStream.ToArray();
+                            byte[] state = sessionState.SaveState();
                             SGAction.Save(state, Platform.GetChecksum(state));
                             break;
                     }

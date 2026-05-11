@@ -132,24 +132,32 @@ public class VectorWar : IGameState
 
     public static Rect _bounds = new Rect(0, 0, 640, 480);
 
-    public void SaveState(BinaryWriter bw) 
+    public byte[] SaveState()
     {
-        bw.Write(frame);
-        bw.Write(_ships.Length);
+        MemoryStream writerStream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(writerStream);
+
+        writer.Write(frame);
+        writer.Write(_ships.Length);
         for (int i = 0; i < _ships.Length; ++i) {
-            _ships[i].Serialize(bw);
+            _ships[i].Serialize(writer);
         }
+
+        return writerStream.ToArray();
     }
 
-    public void LoadState(BinaryReader br) 
+    public void LoadState(byte[] stateBuffer)
     {
-        frame = br.ReadInt32();
-        int length = br.ReadInt32();
+        MemoryStream readerStream = new MemoryStream(stateBuffer);
+        BinaryReader reader = new BinaryReader(readerStream);
+        
+        frame = reader.ReadInt32();
+        int length = reader.ReadInt32();
         if (length != _ships.Length) {
             _ships = new Ship[length];
         }
         for (int i = 0; i < _ships.Length; ++i) {
-            _ships[i].Deserialize(br);
+            _ships[i].Deserialize(reader);
         }
     }
 

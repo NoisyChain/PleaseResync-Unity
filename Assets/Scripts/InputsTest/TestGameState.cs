@@ -35,11 +35,6 @@ public class TestGameState : IGameState
         }
     }
 
-    public TestGameState(BinaryReader br)
-    {
-        LoadState(br);
-    }
-
     public void Setup() {}
 
     public void GameLoop(byte[] playerInput)
@@ -53,18 +48,26 @@ public class TestGameState : IGameState
         }
     }
 
-    public void SaveState(BinaryWriter bw)
+    public byte[] SaveState()
     {
-        bw.Write(frame);
+        MemoryStream writerStream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(writerStream);
+
+        writer.Write(frame);
         for (int i = 0; i < players.Length; ++i)
-            players[i].Serialize(bw);
+            players[i].Serialize(writer);
+        
+        return writerStream.ToArray();
     }
 
-    public void LoadState(BinaryReader br)
+    public void LoadState(byte[] stateBuffer)
     {
-        frame = br.ReadInt32();
+        MemoryStream readerStream = new MemoryStream(stateBuffer);
+        BinaryReader reader = new BinaryReader(readerStream);
+
+        frame = reader.ReadInt32();
         for (int i = 0; i < players.Length; ++i)
-            players[i].Deserialize(br);
+            players[i].Deserialize(reader);
     }
 
     public void Render() {}
