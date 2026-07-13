@@ -80,11 +80,11 @@ namespace PleaseResync.Unity
             string[] temp = new string[length];
             for (int i = 0; i < temp.Length; ++i)
             {
-                string address = "";
+                string address;
                 if (isSpectator)
-                    spectatorConnections[i].IPField.text.Trim();
+                    address = spectatorConnections[i].IPField.text.Trim();
                 else
-                    playerConnections[i].IPField.text.Trim();
+                    address = playerConnections[i].IPField.text.Trim();
                 
                 temp[i] = address.Length > 0 ? address : "127.0.0.1";
             }
@@ -98,11 +98,11 @@ namespace PleaseResync.Unity
             int num = isSpectator ? 8000 : 7000;
             for (int i = 0; i < temp.Length; ++i)
             {
-                string port = "";
+                string port;
                 if (isSpectator)
-                    spectatorConnections[i].PortField.text.Trim();
+                    port = spectatorConnections[i].PortField.text.Trim();
                 else
-                    playerConnections[i].PortField.text.Trim();
+                    port = playerConnections[i].PortField.text.Trim();
                 temp[i] = port.Length > 0 ? ushort.Parse(port) : (ushort)(num + i + 1);
             }
 

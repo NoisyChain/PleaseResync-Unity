@@ -25,11 +25,25 @@ namespace LiteNetLib
     {
         private static readonly NetworkSorter NetworkSorter = new NetworkSorter();
 
-        public static IPEndPoint MakeEndPoint(string hostStr, int port)
-        {
-            return new IPEndPoint(ResolveAddress(hostStr), port);
-        }
+        /// <summary>
+        /// Creates an <see cref="IPEndPoint"/> from a host string and a port.
+        /// </summary>
+        /// <param name="hostStr">The host name or IP address string to resolve.</param>
+        /// <param name="port">The port number for the endpoint.</param>
+        /// <returns>A new <see cref="IPEndPoint"/> instance.</returns>
+        public static IPEndPoint MakeEndPoint(string hostStr, int port) =>
+            new IPEndPoint(ResolveAddress(hostStr), port);
 
+        /// <summary>
+        /// Resolves a host string into an <see cref="IPAddress"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method handles "localhost" specifically, attempts to parse the string as a direct IP, 
+        /// and falls back to DNS resolution. It prioritizes IPv6 if <see cref="LiteNetManager.IPv6Support"/> is enabled.
+        /// </remarks>
+        /// <param name="hostStr">The host name or IP address string (e.g., "127.0.0.1", "localhost", or "google.com").</param>
+        /// <returns>The resolved <see cref="IPAddress"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the address cannot be resolved or is invalid.</exception>
         public static IPAddress ResolveAddress(string hostStr)
         {
             if(hostStr == "localhost")
@@ -37,7 +51,7 @@ namespace LiteNetLib
 
             if (!IPAddress.TryParse(hostStr, out var ipAddress))
             {
-                if (NetManager.IPv6Support)
+                if (LiteNetManager.IPv6Support)
                     ipAddress = ResolveAddress(hostStr, AddressFamily.InterNetworkV6);
                 if (ipAddress == null)
                     ipAddress = ResolveAddress(hostStr, AddressFamily.InterNetwork);
@@ -48,6 +62,12 @@ namespace LiteNetLib
             return ipAddress;
         }
 
+        /// <summary>
+        /// Resolves a host string using DNS for a specific <see cref="AddressFamily"/>.
+        /// </summary>
+        /// <param name="hostStr">The host name to resolve via DNS.</param>
+        /// <param name="addressFamily">The preferred address family (e.g., <see cref="AddressFamily.InterNetwork"/> or <see cref="AddressFamily.InterNetworkV6"/>).</param>
+        /// <returns>The first <see cref="IPAddress"/> matching the family, or <see langword="null"/> if no match is found.</returns>
         public static IPAddress ResolveAddress(string hostStr, AddressFamily addressFamily)
         {
             IPAddress[] addresses = Dns.GetHostEntry(hostStr).AddressList;
@@ -158,7 +178,7 @@ namespace LiteNetLib
         // ===========================================
         internal static void PrintInterfaceInfos()
         {
-            NetDebug.WriteForce(NetLogLevel.Info, $"IPv6Support: { NetManager.IPv6Support}");
+            NetDebug.WriteForce(NetLogLevel.Info, $"IPv6Support: { LiteNetManager.IPv6Support}");
             try
             {
                 foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
@@ -181,10 +201,8 @@ namespace LiteNetLib
             }
         }
 
-        internal static int RelativeSequenceNumber(int number, int expected)
-        {
-            return (number - expected + NetConstants.MaxSequence + NetConstants.HalfMaxSequence) % NetConstants.MaxSequence - NetConstants.HalfMaxSequence;
-        }
+        internal static int RelativeSequenceNumber(int number, int expected) =>
+            (number - expected + NetConstants.MaxSequence + NetConstants.HalfMaxSequence) % NetConstants.MaxSequence - NetConstants.HalfMaxSequence;
 
         internal static T[] AllocatePinnedUninitializedArray<T>(int count) where T : unmanaged
         {

@@ -34,7 +34,7 @@ namespace PleaseResync
 
         public IGameState sessionState;
 
-        LiteNetLibSessionAdapter adapter;
+        SessionAdapter adapter;
         Session session;
         byte[] LastInput;
         List<SessionAction> sessionActions;
@@ -42,7 +42,6 @@ namespace PleaseResync
         string SimulationText;
         string PingText;
         string RollbackText;
-        protected List<ReplayInputs> RecordedInputs = new List<ReplayInputs>();
         
         private Thread GameThread;
         private Mutex mutex = new Mutex();
@@ -65,8 +64,6 @@ namespace PleaseResync
 
         public void Awake()
         {
-            RecordedInputs.Add(new ReplayInputs(new byte[0]));
-
             if (SimulationInfo != null) SimulationInfo.text = "";
             if (RollbackInfo != null) RollbackInfo.text = "";
             if (PingInfo != null) PingInfo.text = "";
@@ -217,14 +214,11 @@ namespace PleaseResync
 
             if (session.IsRunning())
             {
-                if (Replay)
-                    LastInput = ReadInputs(session.Frame());
-                else
-                    for (int i = 0; i < LastInput.Length / InputSize; i++)
-                    {
-                        byte[] inputs = SyncTest ? GetRandomInput() : sessionState.GetLocalInput(i, (int)InputSize);
-                        Array.Copy(inputs, 0, LastInput, i * InputSize, inputs.Length);
-                    }
+                for (int i = 0; i < LastInput.Length / InputSize; i++)
+                {
+                    byte[] inputs = SyncTest ? GetRandomInput() : sessionState.GetLocalInput(i, (int)InputSize);
+                    Array.Copy(inputs, 0, LastInput, i * InputSize, inputs.Length);
+                }
 
                 sessionActions = session.AdvanceFrame(LastInput);
 
@@ -235,7 +229,6 @@ namespace PleaseResync
                         case SessionAdvanceFrameAction AFAction:
                             InputDebug = InputConstructor(AFAction.Inputs);
                             sessionState.GameLoop(AFAction.Inputs);
-                            if (!Replay) RecordInput(AFAction.Frame, AFAction.Inputs);
                             break;
                         case SessionLoadGameAction LGAction:
                             sessionState.LoadState(LGAction.Load());
@@ -264,9 +257,6 @@ namespace PleaseResync
                         PingText = "Ping: " + ShowHighestPing() + " ms";
                     }
                 }
-
-                if (Replay && session.Frame() >= RecordedInputs.Count)
-                    CloseGame();
             }
         }
 
@@ -318,20 +308,6 @@ namespace PleaseResync
             }
 
             return finalString;
-        }
-
-        private void RecordInput(int frame, byte[] inputs)
-        {
-            if (frame >= RecordedInputs.Count)
-                RecordedInputs.Add(new ReplayInputs());
-            
-            RecordedInputs[frame] = new ReplayInputs(inputs);
-            
-        }
-
-        private byte[] ReadInputs(int frame)
-        {
-            return RecordedInputs[frame].inputs;
         }
 
         private byte[] GetRandomInput()

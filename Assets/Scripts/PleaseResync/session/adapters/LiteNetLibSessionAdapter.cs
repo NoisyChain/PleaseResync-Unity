@@ -35,7 +35,9 @@ namespace PleaseResync
         public uint SendTo(uint deviceId, DeviceMessage message)
         {
             var packet = MessagePackSerializer.Serialize(message);
-            foreach (var peer in _netManager.ConnectedPeerList)
+            List<NetPeer> connectedPeers = new List<NetPeer>();
+            _netManager.GetConnectedPeers(connectedPeers);
+            foreach (var peer in connectedPeers)
             {
                 if (peer.Port == _remoteEndpoints[deviceId].Port)
                 {

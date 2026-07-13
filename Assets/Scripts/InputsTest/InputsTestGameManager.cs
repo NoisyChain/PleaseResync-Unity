@@ -9,8 +9,6 @@ public class InputsTestGameManager : PleaseResyncManager
 
     new void Awake()
     {
-        RecordedInputs.Add(new ReplayInputs(new byte[0]));
-
         controls = new PlayerInputs();
 
         if (SimulationInfo != null) SimulationInfo.text = "";
